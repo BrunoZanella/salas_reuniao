@@ -43,22 +43,7 @@
             transform: translateY(-5px);
         }
 
-        .sala-imagem {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid #ffffff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
 
-        .sala-imagem.livre {
-            box-shadow: 0 4px 8px rgba(0, 255, 0, 0.6); /* Box-shadow verde para salas livres */
-        }
-        
-        .sala-imagem.ocupado {
-            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.6); /* Box-shadow vermelho para salas ocupadas */
-        }
         
         .status-livre {
             position: absolute;
@@ -99,6 +84,38 @@
         /* Conteúdo */
         .container {
             margin-top: 10px;
+        }
+
+
+        .circle-container {
+            margin: 10px;
+            text-align: center;
+        }
+        .circle {
+            border-radius: 50%;
+            width: 200px; /* Define o tamanho fixo do círculo */
+            height: 200px; /* Define o tamanho fixo do círculo */
+            overflow: hidden; /* Garante que o conteúdo extra não apareça */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            position: relative;
+            transition: box-shadow 0.3s ease; /* Transição suave para a mudança da sombra */
+        }
+        
+        .circle.livre {
+            box-shadow: 0 4px 10px rgba(0, 255, 0, 0.6); /* Sombra verde para salas livres */
+        }
+        
+        .circle.ocupado {
+            box-shadow: 0 4px 10px rgba(255, 0, 0, 0.6); /* Sombra vermelha para salas ocupadas */
+        }
+        
+        .circle img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
         }
     </style>
 </head>

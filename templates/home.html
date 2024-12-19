@@ -12,13 +12,13 @@
     <div class="col-md-4 mb-4" id="sala-{{ sala.id }}">
         <div class="sala-card text-center">
             <a href="{% url 'calendario_sala' sala.id %}" class="text-decoration-none">
-                <div class="position-relative d-inline-block">
-                    {% comment %} <img src="{{ sala.imagem.url }}" alt="{{ sala.nome }}" class="sala-imagem"> {% endcomment %}
-                    <img 
-                    src="{{ sala.imagem.url }}" 
-                    alt="{{ sala.nome }}" 
-                    class="sala-imagem {% if sala.esta_ocupada %}ocupado{% else %}livre{% endif %}">
-                
+                <div class="position-relative d-inline-block circle-container">
+                    <div class="circle {% if sala.esta_ocupada %}ocupado{% else %}livre{% endif %}">
+                        <img 
+                            src="{{ sala.imagem.url }}" 
+                            alt="{{ sala.nome }}" 
+                            class="sala-imagem">
+                    </div>
                     <span class="status-badge {% if sala.esta_ocupada %}status-ocupado{% else %}status-livre{% endif %}" id="status-{{ sala.id }}">
                         {% if sala.esta_ocupada %}
                             Ocupado
@@ -27,6 +27,7 @@
                         {% endif %}
                     </span>
                 </div>
+                
                 <h3 class="mt-3 text-dark">{{ sala.nome }}</h3>
                 <p class="text-muted">Capacidade: {{ sala.capacidade }} pessoas</p>
             </a>
@@ -34,7 +35,6 @@
     </div>
     {% endfor %}
 </div>
-
 
 <script>
     function atualizarStatusSalas() {
