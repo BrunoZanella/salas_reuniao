@@ -190,8 +190,13 @@ def relatorio_reservas(request):
         inicio = datetime.combine(reserva.data, reserva.hora_inicio)
         fim = datetime.combine(reserva.data, reserva.hora_fim)
         total_horas += fim - inicio
-    
-    total_horas_str = f"{total_horas.total_seconds() / 3600:.2f}"
+
+    # Converte total_horas para horas e minutos
+    total_horas_minutes = int(total_horas.total_seconds() // 60)
+    horas = total_horas_minutes // 60
+    minutos = total_horas_minutes % 60
+    total_horas_str = f"{horas:02d}:{minutos:02d}"
+
     
     context = {
         'reservas': reservas,
