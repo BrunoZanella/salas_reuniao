@@ -7,16 +7,30 @@ from datetime import datetime, timedelta, time
 from .models import Reserva
 from salas.models import Sala
 from django.db import models
+from pytz import timezone as pytz_timezone
 
+# Define o timezone de São Paulo
+SAO_PAULO_TZ = pytz_timezone('America/Sao_Paulo')
 
-#@login_required
+from django.utils import timezone
+from pytz import timezone as pytz_timezone
+
+# Define o timezone de São Paulo
+SAO_PAULO_TZ = pytz_timezone('America/Sao_Paulo')
+
+# @login_required
 def verificar_disponibilidade(request, sala_id, data, hora_inicio):
     sala = get_object_or_404(Sala, id=sala_id)
     data_obj = datetime.strptime(data, '%Y-%m-%d').date()
     hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
     hora_fim_obj = (datetime.combine(data_obj, hora_inicio_obj) + timedelta(minutes=30)).time()
-    
-    if sala.esta_ocupada(data, hora_inicio_obj, hora_fim_obj):
+
+    # Ajusta data e hora para o timezone de São Paulo
+    data_obj = timezone.make_aware(datetime.combine(data_obj, datetime.min.time()), SAO_PAULO_TZ).date()
+    hora_inicio_obj = timezone.make_aware(datetime.combine(data_obj, hora_inicio_obj), SAO_PAULO_TZ).time()
+    hora_fim_obj = timezone.make_aware(datetime.combine(data_obj, hora_fim_obj), SAO_PAULO_TZ).time()
+
+    if sala.esta_ocupada(data_obj, hora_inicio_obj, hora_fim_obj):
         # Busca salas alternativas com mesma capacidade
         salas_sugeridas = Sala.objects.filter(
             capacidade=sala.capacidade
@@ -27,20 +41,20 @@ def verificar_disponibilidade(request, sala_id, data, hora_inicio):
             reserva__hora_fim__gt=hora_inicio_obj,
             reserva__hora_inicio__lt=hora_fim_obj
         )[:3]
-        
+
         sugestoes = [{
             'id': s.id,
             'nome': s.nome,
             'capacidade': s.capacidade
         } for s in salas_sugeridas]
-        
+
         return JsonResponse({
             'disponivel': False,
             'sugestoes': sugestoes,
             'data': data,
             'hora_inicio': hora_inicio
         })
-    
+
     return JsonResponse({
         'disponivel': True,
         'data': data,
@@ -54,41 +68,47 @@ def arredondar_horario(hora):
         return hora.replace(minute=30)
     return (hora + timedelta(hours=1)).replace(minute=0)
 
-#@login_required
+# @login_required
 def criar_reserva(request, sala_id):
     sala = get_object_or_404(Sala, id=sala_id)
-    
+
     if request.method == 'POST':
         data = request.POST.get('data')
         hora_inicio = request.POST.get('hora_inicio')
         hora_fim = request.POST.get('hora_fim')
-        
+
         # Se for horário atual, ajusta para próximo intervalo de 30 minutos
         if hora_inicio == 'now':
-            agora = timezone.localtime()
+            agora = timezone.localtime(SAO_PAULO_TZ)  # Usa timezone de São Paulo
             hora_inicio = arredondar_horario(agora)
             hora_fim = (datetime.combine(agora.date(), hora_inicio) + timedelta(minutes=30)).time()
-        
-        if not sala.esta_ocupada(data, hora_inicio, hora_fim):
+
+        # Ajusta para o timezone de São Paulo
+        data_obj = timezone.make_aware(datetime.strptime(data, '%Y-%m-%d'), SAO_PAULO_TZ).date()
+        hora_inicio_obj = timezone.make_aware(datetime.combine(data_obj, hora_inicio), SAO_PAULO_TZ).time()
+        hora_fim_obj = timezone.make_aware(datetime.combine(data_obj, hora_fim), SAO_PAULO_TZ).time()
+
+        if not sala.esta_ocupada(data_obj, hora_inicio_obj, hora_fim_obj):
             reserva = Reserva(
                 sala=sala,
-                data=data,
-                hora_inicio=hora_inicio,
-                hora_fim=hora_fim
+                data=data_obj,
+                hora_inicio=hora_inicio_obj,
+                hora_fim=hora_fim_obj
             )
-            
+
             if request.user.is_authenticated:
                 reserva.usuario = request.user
             else:
                 reserva.nome_nao_registrado = request.POST.get('nome_usuario')
                 reserva.empresa_nao_registrado = request.POST.get('empresa')
-            
+
             reserva.save()
             messages.success(request, 'Reserva criada com sucesso!')
         else:
             messages.error(request, 'Este horário já está reservado.')
-        
+
         return redirect('calendario_sala', sala_id=sala_id)
+
 
 @login_required
 def minhas_reservas(request):
