@@ -10,11 +10,27 @@ class Sala(models.Model):
     def __str__(self):
         return self.nome
         
-    def esta_ocupada(self, data, hora_inicio, hora_fim):
+    def esta_ocupada(self, data, hora_inicio, hora_fim, reserva_id=None):
         from reservas.models import Reserva
-        return Reserva.objects.filter(
+        
+        query = Reserva.objects.filter(
             sala=self,
             data=data,
             hora_fim__gt=hora_inicio,  # A reserva termina após o início solicitado
             hora_inicio__lt=hora_fim  # A reserva começa antes do fim solicitado
-        ).exists()
+        )
+        
+        # Se for um processo de edição, excluímos a reserva atual da verificação
+        if reserva_id:
+            query = query.exclude(id=reserva_id)
+        
+        return query.exists()
+
+    # def esta_ocupada(self, data, hora_inicio, hora_fim):
+    #     from reservas.models import Reserva
+    #     return Reserva.objects.filter(
+    #         sala=self,
+    #         data=data,
+    #         hora_fim__gt=hora_inicio,  # A reserva termina após o início solicitado
+    #         hora_inicio__lt=hora_fim  # A reserva começa antes do fim solicitado
+    #     ).exists()

@@ -107,7 +107,6 @@ def minhas_reservas(request):
     reservas = Reserva.objects.filter(usuario=request.user).order_by('data', 'hora_inicio')
     return render(request, 'reservas/minhas_reservas.html', {'reservas': reservas})
 
-
 @login_required
 def editar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id)
@@ -121,7 +120,8 @@ def editar_reserva(request, reserva_id):
         hora_inicio = request.POST.get('hora_inicio')
         hora_fim = request.POST.get('hora_fim')
         
-        if not reserva.sala.esta_ocupada(data, hora_inicio, hora_fim):
+        # Passa o reserva_id para a função esta_ocupada
+        if not reserva.sala.esta_ocupada(data, hora_inicio, hora_fim, reserva_id=reserva.id):
             reserva.data = data
             reserva.hora_inicio = hora_inicio
             reserva.hora_fim = hora_fim
@@ -132,6 +132,32 @@ def editar_reserva(request, reserva_id):
             messages.error(request, 'Este horário já está reservado.')
     
     return render(request, 'reservas/editar_reserva.html', {'reserva': reserva})
+
+
+# @login_required
+# def editar_reserva(request, reserva_id):
+#     reserva = get_object_or_404(Reserva, id=reserva_id)
+    
+#     if request.user != reserva.usuario and not request.user.is_staff:
+#         messages.error(request, 'Você não tem permissão para editar esta reserva.')
+#         return redirect('minhas_reservas')
+
+#     if request.method == 'POST':
+#         data = request.POST.get('data')
+#         hora_inicio = request.POST.get('hora_inicio')
+#         hora_fim = request.POST.get('hora_fim')
+        
+#         if not reserva.sala.esta_ocupada(data, hora_inicio, hora_fim):
+#             reserva.data = data
+#             reserva.hora_inicio = hora_inicio
+#             reserva.hora_fim = hora_fim
+#             reserva.save()
+#             messages.success(request, 'Reserva atualizada com sucesso!')
+#             return redirect('minhas_reservas')
+#         else:
+#             messages.error(request, 'Este horário já está reservado.')
+    
+#     return render(request, 'reservas/editar_reserva.html', {'reserva': reserva})
 
 @login_required
 def excluir_reserva(request, reserva_id):
