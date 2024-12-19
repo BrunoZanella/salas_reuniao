@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="mb-4">Confirmar Exclusão</h2>
+                    <p>Você tem certeza que deseja excluir a reserva da sala <strong>{{ reserva.sala.nome }}</strong> para o dia <strong>{{ reserva.data|date:"d/m/Y" }}</strong> das <strong>{{ reserva.hora_inicio|time:"H:i" }}</strong> às <strong>{{ reserva.hora_fim|time:"H:i" }}</strong>?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+                            <a href="{% url 'minhas_reservas' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

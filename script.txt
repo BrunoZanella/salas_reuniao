@@ -1,0 +1,15 @@
+quero uma aplicacao django python para agendar uma sala de reuniao. Quero variaveis em portugues e todo o site em portugues 
+Quero que tenha salas que sejam cadastradas, essas salas devem ter as variaveis de nome, imagem, tamanho de sala, capacidade da sala. 
+No usuario, quero um cadastro de nome, sobrenome, email, telefone, empresa. 
+Na tela principal quero que tenha circulos com a imagem da sala e em baixo desse circulo o nome da sala e a capacidade e no circulo uma faixa com o texto liberado em verde  ou ocupado em vermelho. 
+Quero que ao clicar em alguma sala, abre um calendario da semana comecando em segunda (7:00 AM) e terminando em sexta feira (18:00 PM) e que ao clicar em algum horario abra um card no meio para preencher, ja deve vir preenchido dia, hora de inicio e hora de fim mas que possa editar, os dados do usuario tambem ja devem vir preechidos porem quero que seja oculos, ao clicar no botao reservar no card essa sala nesse horario, essa sala fique indisponivel nesse periodo e ninguem consiga reservar nesse periodo mas pode reservar outros horarios, apenas a pessoa que reservou e o adminstrador pode editar ou deletar a reserva, atualizando o tempo da reserva da sala. 
+Quero que tambem tenha uma tela de editar usuario para editar as informacoes do usuario e uma tela de cadastro e de entrar sair do sistema
+quero uma interface bonita e intuitiva, que os usuarios entendam sem muito esforco
+
+
+
+
+quero que o horario que estiver reservado, mostre esse horario de uma cor no calendario, por exemplo reservei as 07:30 as 09:00 do dia 05/12/2024, quero esse horario nesse dia no calendario de uma cor com o nome da pessoa que reservou. 
+quero que uma pessoa que nao esta logada consiga reservar tambem e o campo usuario do card da reserva ela digita o nome dela que fica armazenado
+quero que possa mostrar outras semanas tambem, uma seta para passar para a outra semana, quero que o risco vermenho seja da hora atual e que fique atualizando e andando no calendario de acordo que a hora vai passando, se eu reservar um horario que seja agora, coloque do agora ate 30 ou 00, ou seja, se agora e 07:46 e quero reservar para agora, reserve de 07:46 ate +30 so que tem que ser horario de 30 ou 00 entao mais 30 08:16 entao a reserva sugerida vai ate 08:30
+quero uma tela que somente adminstradores consiga ver que se chamara relatorio, nessa tela quero todas as reservas e um filtro, quero que de inicio mostre as reservas da semana mas tenha um filtro para mostrar tanto as reservas de uma semana atras uma semana a frente, um mes atras, um mes a frente, todo o periodoe quero poder filtrar por empresas e que eu possa adicionar, excuir e editar qualquer um e no fim da tabela o total de horarios

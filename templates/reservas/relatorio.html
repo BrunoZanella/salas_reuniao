@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Relatório de Reservas</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Período</label>
+                    <select name="periodo" class="form-select" onchange="toggleDataPersonalizada(this.value)">
+                        <option value="semana" {% if periodo == 'semana' %}selected{% endif %}>Semana Atual</option>
+                        <option value="semana_anterior" {% if periodo == 'semana_anterior' %}selected{% endif %}>Semana Anterior</option>
+                        <option value="semana_seguinte" {% if periodo == 'semana_seguinte' %}selected{% endif %}>Próxima Semana</option>
+                        <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Mês Atual</option>
+                        <option value="mes_anterior" {% if periodo == 'mes_anterior' %}selected{% endif %}>Mês Anterior</option>
+                        <option value="personalizado" {% if periodo == 'personalizado' %}selected{% endif %}>Período Personalizado</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">Empresa</label>
+                    <input type="text" name="empresa" class="form-control" value="{{ empresa|default:'' }}">
+                </div>
+                
+                <div class="col-md-3 data-personalizada" style="display: none;">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" name="data_inicio" class="form-control" value="{{ data_inicio }}">
+                </div>
+                
+                <div class="col-md-3 data-personalizada" style="display: none;">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" name="data_fim" class="form-control" value="{{ data_fim }}">
+                </div>
+                
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Sala</th>
+                    <th>Data</th>
+                    <th>Horário</th>
+                    <th>Usuário</th>
+                    <th>Empresa</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reserva in reservas %}
+                <tr>
+                    <td>{{ reserva.sala.nome }}</td>
+                    <td>{{ reserva.data|date:"d/m/Y" }}</td>
+                    <td>{{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fim|time:"H:i" }}</td>
+                    <td>{{ reserva.get_nome_usuario }}</td>
+                    <td>{{ reserva.get_empresa }}</td>
+                    <td>
+                        <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'excluir_reserva' reserva.id %}" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" class="text-end"><strong>Total de Horas:</strong></td>
+                    <td><strong>{{ total_horas }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<script>
+function toggleDataPersonalizada(valor) {
+    const campos = document.querySelectorAll('.data-personalizada');
+    campos.forEach(campo => {
+        campo.style.display = valor === 'personalizado' ? 'block' : 'none';
+    });
+}
+
+// Inicializa o estado dos campos de data personalizada
+document.addEventListener('DOMContentLoaded', function() {
+    toggleDataPersonalizada(document.querySelector('select[name="periodo"]').value);
+});
+</script>
+{% endblock %}

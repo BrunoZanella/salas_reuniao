@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4">Minhas Reservas</h2>
+    
+    {% if reservas %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Sala</th>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr>
+                        <td>{{ reserva.sala.nome }}</td>
+                        <td>{{ reserva.data|date:"d/m/Y" }}</td>
+                        <td>{{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fim|time:"H:i" }}</td>
+                        <td>
+                            <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a href="{% url 'excluir_reserva' reserva.id %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Excluir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            Você ainda não possui reservas.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
