@@ -6,9 +6,15 @@ from reservas.models import Reserva
 from django.contrib import messages
 from django.http import JsonResponse
 
+from zoneinfo import ZoneInfo
+from django.utils import timezone
+
+# Configura o timezone de São Paulo
+SAO_PAULO_TZ = ZoneInfo("America/Sao_Paulo")
+
 def home(request):
     salas = Sala.objects.all()
-    agora = datetime.now()
+    agora = timezone.now().astimezone(SAO_PAULO_TZ)
     data_atual = agora.date()
     hora_atual = agora.time()
     
@@ -18,7 +24,7 @@ def home(request):
     return render(request, 'home.html', {'salas': salas})
 
 def atualizar_status_salas(request):
-    agora = datetime.now()
+    agora = timezone.now().astimezone(SAO_PAULO_TZ) 
     data_atual = agora.date()
     hora_atual = agora.time()
 
@@ -45,9 +51,9 @@ def calendario_sala(request, sala_id):
     if data_param:
         hoje = datetime.strptime(data_param, '%Y-%m-%d').date()
     else:
-        hoje = datetime.now().date()
+        hoje = timezone.now().astimezone(SAO_PAULO_TZ).date()  # Usa ZoneInfo
     
-    hora_atual = datetime.now().time()
+    hora_atual = timezone.now().astimezone(SAO_PAULO_TZ).time()  # Usa ZoneInfo
     dias_semana = []
     horarios = []
     

@@ -7,3 +7,4 @@ gunicorn
 whitenoise
 django-admin-interface
 localflavor
+pytz
