@@ -42,7 +42,7 @@ MIDDLEWARE = [
 #ALLOWED_HOSTS = ['192.168.15.96','10.0.6.169']
 ALLOWED_HOSTS = ["*"]
 STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-CSRF_TRUSTED_ORIGINS= ["https://loteria.up.railway.app"]
+CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
