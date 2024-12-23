@@ -39,7 +39,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-#ALLOWED_HOSTS = ['192.168.15.96','10.0.6.169']
+# ALLOWED_HOSTS = ['192.168.15.96','10.0.6.169']
 ALLOWED_HOSTS = ["*"]
 STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
@@ -107,7 +107,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-LOGIN_URL = '/usuarios/login/'  # Substitua pela URL correta para sua página de login
+LOGIN_URL = '/login/'  # Substitua pela URL correta para sua página de login
 
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
