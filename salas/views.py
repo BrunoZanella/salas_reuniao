@@ -5,6 +5,8 @@ from .models import Sala
 from reservas.models import Reserva
 from django.contrib import messages
 from django.http import JsonResponse
+from .forms import SalaForm
+from django.contrib.auth.decorators import user_passes_test
 
 from zoneinfo import ZoneInfo
 from django.utils import timezone
@@ -134,3 +136,43 @@ def calendario_sala(request, sala_id):
     }
     return render(request, 'calendario.html', context)
 
+
+@user_passes_test(lambda u: u.is_superuser)
+def gerenciar_salas(request):
+    salas = Sala.objects.all()
+    form = SalaForm()  # Inicializa o formulário padrão
+
+    if request.method == 'POST':
+        acao = request.POST.get('acao')
+        sala_id = request.POST.get('sala_id')
+
+        print(f"Ação recebida: {acao}, Sala ID: {sala_id}")
+
+        if acao == 'editar' and sala_id:
+            sala = get_object_or_404(Sala, id=sala_id)
+            form = SalaForm(request.POST, request.FILES, instance=sala)
+            if form.is_valid():
+                form.save()
+                return redirect('gerenciar_salas')
+            else:
+                print("Erro ao validar o formulário de edição:", form.errors)
+
+        elif acao == 'deletar' and sala_id:
+            sala = get_object_or_404(Sala, id=sala_id)
+            sala.delete()
+            return redirect('gerenciar_salas')
+
+        elif acao == 'adicionar':
+            form = SalaForm(request.POST, request.FILES)
+            if form.is_valid():
+                form.save()
+                return redirect('gerenciar_salas')
+            else:
+                print("Erro ao validar o formulário de adição:", form.errors)
+
+
+    # Renderiza a página com o formulário inicial (GET ou caso não tenha ação válida no POST)
+    return render(request, 'gerenciar_salas.html', {
+        'salas': salas,
+        'form': form,
+    })

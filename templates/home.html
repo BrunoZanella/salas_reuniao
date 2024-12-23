@@ -5,7 +5,18 @@
 
 
 
-<h1 class="text-center mb-4">Salas de Reunião</h1>
+{% comment %} <h1 class="text-center mb-4">Salas de Reunião</h1> {% endcomment %}
+
+<h1 class="text-center mb-4 d-inline-block">Salas de Reunião</h1>
+
+{% if user.is_superuser %}
+<!-- Botão para criar/editar/excluir salas -->
+<a href="{% url 'gerenciar_salas' %}" class="btn btn-outline-primary float-end" title="Gerenciar Salas">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3H4a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+    </svg>
+</a>
+{% endif %}
 
 <div class="row justify-content-center" id="salas-list"> 
     {% for sala in salas %}

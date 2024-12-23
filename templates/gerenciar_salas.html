@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="text-center mb-4">Gerenciar Salas</h1>
+
+<div class="d-flex justify-content-end mb-3">
+    <!-- Botão de adicionar -->
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#adicionarSalaModal">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3H4.5a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            <path d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 1a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/>
+        </svg>
+        Adicionar Sala
+    </button>
+</div>
+
+<table class="table mt-4">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Capacidade</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sala in salas %}
+        <tr>
+            <td>{{ sala.nome }}</td>
+            <td>{{ sala.capacidade }}</td>
+            <td>
+                <!-- Botão de editar -->
+                <form method="POST" class="form-editar" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="editar">
+                    <input type="hidden" name="sala_id" value="{{ sala.id }}">
+                    <!-- Botão de Editar -->
+                    <button 
+                        type="button" 
+                        class="btn btn-warning btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#editarModal" 
+                        data-sala-id="{{ sala.id }}" 
+                        data-nome="{{ sala.nome }}" 
+                        data-tamanho="{{ sala.tamanho }}" 
+                        data-capacidade="{{ sala.capacidade }}">
+                        Editar
+                    </button>
+                </form>
+        
+                <!-- Botão de apagar -->
+                <form method="POST" class="form-deletar" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="acao" value="deletar">
+                    <input type="hidden" name="sala_id" value="{{ sala.id }}">
+                    <!-- Botão de apagar -->
+                    <button 
+                        type="button" 
+                        class="btn btn-danger btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#confirmarExclusaoModal" 
+                        data-sala-id="{{ sala.id }}" 
+                        data-nome="{{ sala.nome }}">
+                        Apagar
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        
+    </tbody>
+</table>
+
+<!-- Modal Adicionar Sala -->
+<div class="modal fade" id="adicionarSalaModal" tabindex="-1" aria-labelledby="adicionarSalaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adicionarSalaModalLabel">Adicionar Sala</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="adicionar">
+                <div class="modal-body">
+                    {{ form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Sala -->
+<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarModalLabel">Editar Sala</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="editar">
+                <input type="hidden" name="sala_id" id="editarSalaId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editarNome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="editarNome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarTamanho" class="form-label">Tamanho</label>
+                        <input type="text" class="form-control" id="editarTamanho" name="tamanho" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarCapacidade" class="form-label">Capacidade</label>
+                        <input type="number" class="form-control" id="editarCapacidade" name="capacidade" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarImagem" class="form-label">Imagem</label>
+                        <input type="file" class="form-control" id="editarImagem" name="imagem">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Confirmar Exclusão -->
+<div class="modal fade" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmarExclusaoModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Tem certeza de que deseja excluir a sala <strong id="sala-a-excluir"></strong>?
+            </div>
+            <form id="form-deletar-sala" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="deletar">
+                <input type="hidden" name="sala_id" id="excluir-sala-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    <ul>
+        {% for field, errors in form.errors.items %}
+        <li>{{ field }}: {{ errors|join:", " }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+
+<script>
+    const editarModal = document.getElementById('editarModal');
+    editarModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const salaId = button.getAttribute('data-sala-id');
+        const nome = button.getAttribute('data-nome');
+        const tamanho = button.getAttribute('data-tamanho');
+        const capacidade = button.getAttribute('data-capacidade');
+
+        // Preenche os campos do modal
+        document.getElementById('editarSalaId').value = salaId;
+        document.getElementById('editarNome').value = nome;
+        document.getElementById('editarTamanho').value = tamanho;
+        document.getElementById('editarCapacidade').value = capacidade;
+    });
+</script>
+
+<script>
+    const confirmarExclusaoModal = document.getElementById('confirmarExclusaoModal');
+    confirmarExclusaoModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const salaId = button.getAttribute('data-sala-id');
+        const nome = button.getAttribute('data-nome');
+
+        // Atualiza os campos do modal com os dados da sala
+        document.getElementById('sala-a-excluir').textContent = nome;
+        document.getElementById('excluir-sala-id').value = salaId;
+    });
+</script>
+
+
+
+{% endblock %}
