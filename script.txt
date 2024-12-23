@@ -13,3 +13,8 @@ quero que o horario que estiver reservado, mostre esse horario de uma cor no cal
 quero que uma pessoa que nao esta logada consiga reservar tambem e o campo usuario do card da reserva ela digita o nome dela que fica armazenado
 quero que possa mostrar outras semanas tambem, uma seta para passar para a outra semana, quero que o risco vermenho seja da hora atual e que fique atualizando e andando no calendario de acordo que a hora vai passando, se eu reservar um horario que seja agora, coloque do agora ate 30 ou 00, ou seja, se agora e 07:46 e quero reservar para agora, reserve de 07:46 ate +30 so que tem que ser horario de 30 ou 00 entao mais 30 08:16 entao a reserva sugerida vai ate 08:30
 quero uma tela que somente adminstradores consiga ver que se chamara relatorio, nessa tela quero todas as reservas e um filtro, quero que de inicio mostre as reservas da semana mas tenha um filtro para mostrar tanto as reservas de uma semana atras uma semana a frente, um mes atras, um mes a frente, todo o periodoe quero poder filtrar por empresas e que eu possa adicionar, excuir e editar qualquer um e no fim da tabela o total de horarios
+
+
+
+se tiver um horario reservado as 8:00 e eu reservar das 7:00 ate 12:00, 
+quero que nao deixe e diga que esta reservado nese horario e de sugestao de qual sala esta livre nesse intervalo, do jeito que esta, se tiver uma reserva no intervalo que estou resevando, apenas mostra que nao posso reservar pois ja tem uma reserva

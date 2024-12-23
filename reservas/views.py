@@ -10,7 +10,6 @@ from django.db import models
 from zoneinfo import ZoneInfo
 from django.utils.timezone import make_aware
 
-
 # Configura o timezone de São Paulo
 SAO_PAULO_TZ = ZoneInfo("America/Sao_Paulo")
 
@@ -20,14 +19,14 @@ def to_sao_paulo_tz(data, hora):
     naive_datetime = datetime.combine(data, hora)
     return make_aware(naive_datetime, timezone=SAO_PAULO_TZ)
 
-#@login_required
+# @login_required
 def verificar_disponibilidade(request, sala_id, data, hora_inicio):
     sala = get_object_or_404(Sala, id=sala_id)
     data_obj = datetime.strptime(data, '%Y-%m-%d').date()
     hora_inicio_obj = datetime.strptime(hora_inicio, '%H:%M').time()
     hora_fim_obj = (datetime.combine(data_obj, hora_inicio_obj) + timedelta(minutes=30)).time()
-    
-    if sala.esta_ocupada(data, hora_inicio_obj, hora_fim_obj):
+
+    if sala.esta_ocupada(data_obj, hora_inicio_obj, hora_fim_obj):
         salas_sugeridas = Sala.objects.filter(
             capacidade=sala.capacidade
         ).exclude(
@@ -37,40 +36,44 @@ def verificar_disponibilidade(request, sala_id, data, hora_inicio):
             reserva__hora_fim__gt=hora_inicio_obj,
             reserva__hora_inicio__lt=hora_fim_obj
         )[:3]
-        
+
         sugestoes = [{
             'id': s.id,
             'nome': s.nome,
             'capacidade': s.capacidade
         } for s in salas_sugeridas]
-        
+
         return JsonResponse({
             'disponivel': False,
             'sugestoes': sugestoes,
             'data': data,
             'hora_inicio': hora_inicio
         })
-    
+
     return JsonResponse({
         'disponivel': True,
         'data': data,
         'hora_inicio': hora_inicio
     })
 
+
 def arredondar_horario(hora):
+    """Arredonda o horário para o próximo intervalo de 30 minutos"""
     minutos = hora.minute
     if minutos <= 30:
         return hora.replace(minute=30)
     return (hora + timedelta(hours=1)).replace(minute=0)
 
-#@login_required
+# @login_required
 def criar_reserva(request, sala_id):
     sala = get_object_or_404(Sala, id=sala_id)
-    
+
     if request.method == 'POST':
         data = request.POST.get('data')
         hora_inicio = request.POST.get('hora_inicio')
-        
+        hora_fim = request.POST.get('hora_fim')
+
+        # Ajusta o horário atual caso selecionado
         if hora_inicio == 'now':
             agora = make_aware(datetime.now(), timezone=SAO_PAULO_TZ)
             hora_inicio = arredondar_horario(agora.time())
@@ -79,9 +82,14 @@ def criar_reserva(request, sala_id):
             data_obj = datetime.strptime(data, '%Y-%m-%d').date()
             hora_inicio = datetime.strptime(hora_inicio, '%H:%M').time()
             data = to_sao_paulo_tz(data_obj, hora_inicio).date()
-        
-        hora_fim = (to_sao_paulo_tz(data, hora_inicio) + timedelta(minutes=30)).time()
-        
+
+        # Ajusta o horário de fim, se fornecido
+        if hora_fim:
+            hora_fim = datetime.strptime(hora_fim, '%H:%M').time()
+        else:
+            hora_fim = (to_sao_paulo_tz(data, hora_inicio) + timedelta(minutes=30)).time()
+
+        # Verifica disponibilidade no intervalo solicitado
         if not sala.esta_ocupada(data, hora_inicio, hora_fim):
             reserva = Reserva(
                 sala=sala,
@@ -94,13 +102,14 @@ def criar_reserva(request, sala_id):
             else:
                 reserva.nome_nao_registrado = request.POST.get('nome_usuario')
                 reserva.empresa_nao_registrado = request.POST.get('empresa')
-            
+
             reserva.save()
             messages.success(request, 'Reserva criada com sucesso!')
         else:
             messages.error(request, 'Este horário já está reservado.')
-        
+
         return redirect('calendario_sala', sala_id=sala_id)
+
 
 @login_required
 def minhas_reservas(request):
@@ -133,31 +142,6 @@ def editar_reserva(request, reserva_id):
     
     return render(request, 'reservas/editar_reserva.html', {'reserva': reserva})
 
-
-# @login_required
-# def editar_reserva(request, reserva_id):
-#     reserva = get_object_or_404(Reserva, id=reserva_id)
-    
-#     if request.user != reserva.usuario and not request.user.is_staff:
-#         messages.error(request, 'Você não tem permissão para editar esta reserva.')
-#         return redirect('minhas_reservas')
-
-#     if request.method == 'POST':
-#         data = request.POST.get('data')
-#         hora_inicio = request.POST.get('hora_inicio')
-#         hora_fim = request.POST.get('hora_fim')
-        
-#         if not reserva.sala.esta_ocupada(data, hora_inicio, hora_fim):
-#             reserva.data = data
-#             reserva.hora_inicio = hora_inicio
-#             reserva.hora_fim = hora_fim
-#             reserva.save()
-#             messages.success(request, 'Reserva atualizada com sucesso!')
-#             return redirect('minhas_reservas')
-#         else:
-#             messages.error(request, 'Este horário já está reservado.')
-    
-#     return render(request, 'reservas/editar_reserva.html', {'reserva': reserva})
 
 @login_required
 def excluir_reserva(request, reserva_id):

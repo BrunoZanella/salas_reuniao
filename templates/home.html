@@ -44,7 +44,7 @@
                 // Atualiza os status de cada sala com base na resposta do servidor
                 data.salas.forEach(sala => {
                     const statusElement = document.getElementById(`status-${sala.id}`);
-                    const imagemElement = document.querySelector(`#sala-${sala.id} .sala-imagem`);
+                    const circleElement = document.querySelector(`#sala-${sala.id} .circle`);
                     
                     if (sala.esta_ocupada) {
                         // Atualiza status-badge
@@ -52,18 +52,18 @@
                         statusElement.classList.add('status-ocupado');
                         statusElement.textContent = 'Ocupado';
                         
-                        // Atualiza aparência da imagem
-                        imagemElement.classList.remove('livre');
-                        imagemElement.classList.add('ocupado');
+                        // Atualiza aparência do círculo
+                        circleElement.classList.remove('livre');
+                        circleElement.classList.add('ocupado');
                     } else {
                         // Atualiza status-badge
                         statusElement.classList.remove('status-ocupado');
                         statusElement.classList.add('status-livre');
                         statusElement.textContent = 'Liberado';
                         
-                        // Atualiza aparência da imagem
-                        imagemElement.classList.remove('ocupado');
-                        imagemElement.classList.add('livre');
+                        // Atualiza aparência do círculo
+                        circleElement.classList.remove('ocupado');
+                        circleElement.classList.add('livre');
                     }
                 });
             });
@@ -74,6 +74,9 @@
     
     // Chama a função para garantir que o status seja atualizado assim que a página carregar
     atualizarStatusSalas();
+    
+
+
 </script>
 
 {% endblock %}

@@ -1,5 +1,5 @@
 from django import template
-from datetime import datetime, date, time  # Import explícito de date e time
+from datetime import datetime, date, time, timedelta
 import colorsys
 
 register = template.Library()
@@ -11,12 +11,11 @@ def get_reserva(reservas, chave):
     """
     if isinstance(chave, date):
         return reservas.get(chave, {})
+    
     if isinstance(chave, time):
         return reservas.get(chave)
     return None
 
-
- 
 
 @register.filter
 def get_user_color(user_id):
@@ -44,3 +43,19 @@ def get_text_color(user_id):
         return f"#{base_color:06x}"  # Formata como cor hexadecimal
     except Exception:
         return "#000000"  # Valor padrão em caso de erro
+
+
+
+
+
+# @register.filter
+# def get_reserva(reservas, data_ou_hora):
+#     """
+#     Filtro personalizado para obter uma reserva específica por data ou hora.
+#     """
+#     # Se for uma data, retorna o dicionário de horários para essa data
+#     if isinstance(data_ou_hora, date):
+#         return reservas.get(data_ou_hora, {})
+    
+#     # Se for um horário, não faz sentido buscar diretamente. Deixe o template acessar a hora.
+#     return None

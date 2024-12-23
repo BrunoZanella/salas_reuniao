@@ -74,7 +74,8 @@ def calendario_sala(request, sala_id):
         # Avança 30 minutos
         dt = datetime.combine(date.today(), hora_atual_dt) + timedelta(minutes=30)
         hora_atual_dt = dt.time()
-    
+
+
     # Busca todas as reservas da semana
     reservas = Reserva.objects.filter(
         sala=sala,
@@ -87,16 +88,34 @@ def calendario_sala(request, sala_id):
         reservas_dict[dia] = {}
         dia_reservas = reservas.filter(data=dia)
         for reserva in dia_reservas:
-            hora_atual = reserva.hora_inicio
-            while hora_atual < reserva.hora_fim:
+            inicio_intervalo = datetime.combine(date.today(), time(reserva.hora_inicio.hour, (reserva.hora_inicio.minute // 30) * 30))
+            fim_minuto = ((reserva.hora_fim.minute + 29) // 30) * 30
+            fim_hora = reserva.hora_fim.hour + (fim_minuto // 60)  # Ajusta para a próxima hora se ultrapassar 59 minutos
+            fim_minuto = fim_minuto % 60  # Garante que os minutos fiquem no intervalo de 0 a 59
+
+            fim_intervalo = datetime.combine(date.today(), time(fim_hora, fim_minuto))
+
+            # Preenche os intervalos de 30 minutos
+            hora_atual = inicio_intervalo.time()
+            while hora_atual < fim_intervalo.time():
+                # Calcula os minutos que a reserva ocupa dentro do intervalo atual
+                inicio_reserva = max(reserva.hora_inicio, hora_atual)
+                fim_reserva = min(reserva.hora_fim, (datetime.combine(date.today(), hora_atual) + timedelta(minutes=30)).time())
+                duracao_reserva = (datetime.combine(date.today(), fim_reserva) - datetime.combine(date.today(), inicio_reserva)).seconds // 60
+
+                # Salva a duração relativa dentro da célula
                 reservas_dict[dia][hora_atual] = {
                     'usuario': reserva.usuario if reserva.usuario else None,
                     'nome_nao_registrado': reserva.nome_nao_registrado,
                     'empresa_nao_registrado': reserva.empresa_nao_registrado,
+                    'inicio_reserva': inicio_reserva,
+                    'fim_reserva': fim_reserva,
+                    'duracao_minutos': duracao_reserva,
                 }
-                dt = datetime.combine(date.today(), hora_atual) + timedelta(minutes=30)
-                hora_atual = dt.time()
-    
+
+                hora_atual = (datetime.combine(date.today(), hora_atual) + timedelta(minutes=30)).time()
+
+
     # Obtém a sala anterior e próxima
     salas = list(Sala.objects.order_by('id'))
     sala_idx = salas.index(sala)
@@ -114,3 +133,4 @@ def calendario_sala(request, sala_id):
         'data_atual': hoje.strftime('%Y-%m-%d'),
     }
     return render(request, 'calendario.html', context)
+
