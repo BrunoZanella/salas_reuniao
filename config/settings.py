@@ -30,20 +30,22 @@ X_FRAME_OPTIONS='SAMEORIGIN'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+#    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+#    'config.middleware.SessionExpireRedirectMiddleware',
+
 ]
 
-#ALLOWED_HOSTS = ['192.168.15.96','10.0.6.169']
-ALLOWED_HOSTS = ["*"]
-STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+ALLOWED_HOSTS = ['192.168.15.96','10.0.6.169']
+# ALLOWED_HOSTS = ["*"]
+# STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 ROOT_URLCONF = 'config.urls'
@@ -107,8 +109,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 # tempo limite da sessão em segundos (1 hora)
 SESSION_COOKIE_AGE = 3600
