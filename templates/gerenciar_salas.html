@@ -82,7 +82,22 @@
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="adicionar">
                 <div class="modal-body">
-                    {{ form.as_p }}
+                    <div class="mb-3">
+                        <label for="adicionarNome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="adicionarNome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adicionarTamanho" class="form-label">Tamanho</label>
+                        <input type="text" class="form-control" id="adicionarTamanho" name="tamanho" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adicionarCapacidade" class="form-label">Capacidade</label>
+                        <input type="number" class="form-control" id="adicionarCapacidade" name="capacidade" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="adicionarImagem" class="form-label">Imagem</label>
+                        <input type="file" class="form-control" id="adicionarImagem" name="imagem">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -92,6 +107,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Modal Editar Sala -->
 <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
