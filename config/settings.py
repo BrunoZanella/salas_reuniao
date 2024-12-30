@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'as8as6887A$#RSWEFWR%#@@@!$%¨&&¨*¨*(*6f!9&8+=3c0rjh4mz5hl14d=!04*+djw@'
 
-DEBUG = False
+DEBUG = True
 
 INSTALLED_APPS = [
     'admin_interface',
