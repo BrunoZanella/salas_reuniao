@@ -235,32 +235,30 @@
         position: absolute;
         left: 0;
         right: 0;
-        top: 50%;
-        height: 2px;
-        background-color: #dc3545;
-        opacity: 0.7;
-        z-index: 1;
+        border-top: 2px solid #dc3545;
+        z-index: 1000;
+        pointer-events: none;
     }
+    
     .horario-cell {
+        height: 60px;
         position: relative;
-        height: 50px;
+        transition: all 0.3s ease;
     }
-    
-    
+
     .horario-cell:not([data-bs-toggle="tooltip"]):hover {
         background-color: rgba(0, 123, 255, 0.1);
     }
-    
-    .horario-cell.reserved {
-        background-color: #ffe5e5; /* Cor para horários reservados */
-        cursor: not-allowed;
-    }
-    
+
     .reserva-info {
         font-size: 0.8em;
         text-align: center;
         font-weight: bold;
-        color: #333; /* Cor padrão para o texto */
+    }
+
+    .table td {
+        padding: 0;
+        position: relative;
     }
     
 </style>
@@ -373,6 +371,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+function atualizarLinhaHoraAtual() {
+    // Remove linhas existentes
+    document.querySelectorAll('.hora-atual-linha').forEach(linha => linha.remove());
+    
+    const agora = new Date();
+    const hora = agora.getHours();
+    const minutos = agora.getMinutes();
+    
+    // Encontra a célula correta baseada na hora atual
+    const horaFormatada = `${String(hora).padStart(2, '0')}:${String(Math.floor(minutos/30)*30).padStart(2, '0')}`;
+    const celulas = document.querySelectorAll(`td[data-hora="${horaFormatada}"]`);
+    
+    celulas.forEach(celula => {
+        const linha = document.createElement('div');
+        linha.className = 'hora-atual-linha';
+        
+        // Calcula a posição vertical baseada nos minutos
+        const minutosPassados = minutos % 30;
+        const porcentagem = (minutosPassados / 30) * 100;
+        linha.style.top = `${porcentagem}%`;
+        
+        celula.appendChild(linha);
+    });
+}
+
+// Atualiza a cada minuto
+setInterval(atualizarLinhaHoraAtual, 60000);
+
+// Atualiza imediatamente ao carregar
+document.addEventListener('DOMContentLoaded', atualizarLinhaHoraAtual);
 
 {% comment %} document.addEventListener("DOMContentLoaded", () => {
     const horaAtual = "{{ hora_atual|time:'H:i' }}"; // Hora atual enviada do Django
