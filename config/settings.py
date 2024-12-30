@@ -46,6 +46,22 @@ STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
 
 
+# Configurações de PWA
+PWA_APP_NAME = 'Sistema de Reserva de Salas'
+PWA_APP_DESCRIPTION = "Sistema para agendamento de salas de reunião"
+PWA_APP_THEME_COLOR = '#0d6efd'
+PWA_APP_BACKGROUND_COLOR = '#000000'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/icons/logo_sdo_preto_192x192.png',
+        'sizes': '192x192',
+        'type': 'image/png'
+    }
+]
 
 ROOT_URLCONF = 'config.urls'
 
