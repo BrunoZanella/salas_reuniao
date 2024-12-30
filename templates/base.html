@@ -138,7 +138,11 @@
                 padding-bottom: env(safe-area-inset-bottom);
             }
         }
-
+        .ios-install-banner {
+            font-family: Arial, sans-serif;
+            color: #000;
+        }
+        
     </style>
 </head>
 <body>
@@ -235,6 +239,25 @@
                 installButton.style.display = 'none';
             }
         });
+
+        function isIos() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+        
+        function isInStandaloneMode() {
+            return ('standalone' in window.navigator) && (window.navigator.standalone);
+        }
+        
+        if (isIos() && !isInStandaloneMode()) {
+            const iosInstallBanner = document.createElement('div');
+            iosInstallBanner.className = 'ios-install-banner';
+            iosInstallBanner.innerHTML = `
+                <div style="position: fixed; bottom: 10px; left: 10px; right: 10px; background: #fff; padding: 10px; border: 1px solid #ccc; text-align: center; z-index: 1000;">
+                    <p>Para instalar este app, toque em <span style="font-weight: bold;">"Compartilhar"</span> e depois em <span style="font-weight: bold;">"Adicionar à Tela de Início"</span>.</p>
+                </div>`;
+            document.body.appendChild(iosInstallBanner);
+        }
+        
     </script>
     
 </body>

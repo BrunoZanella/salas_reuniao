@@ -1,6 +1,6 @@
 {
-    "name": "Sistema de Reserva de Salas",
-    "short_name": "Reservas",
+    "name": "Agendamento de salas de reunião SDO",
+    "short_name": "Reunião SDO",
     "description": "Sistema para agendamento de salas de reunião",
     "start_url": "/",
     "id": "/",
