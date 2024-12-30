@@ -8,3 +8,4 @@ whitenoise
 django-admin-interface
 localflavor
 pytz
+python-dateutil

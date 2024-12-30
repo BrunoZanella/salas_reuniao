@@ -1,6 +1,13 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+
+
+
 <div class="container">
     <h2 class="text-center mb-4">Relatório de Reservas</h2>
     
@@ -42,7 +49,7 @@
     </div>
     
     <div class="table-responsive">
-        <table class="table table-striped">
+        <table id="reservasTable" class="table table-striped">
             <thead>
                 <tr>
                     <th>Sala</th>
@@ -80,7 +87,20 @@
             </tfoot>
         </table>
     </div>
+    
 </div>
+
+<!-- Certifique-se de incluir jQuery primeiro -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- DataTables e botões -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.4/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.4/vfs_fonts.js"></script>
+
 
 <script>
 function toggleDataPersonalizada(valor) {
@@ -94,5 +114,108 @@ function toggleDataPersonalizada(valor) {
 document.addEventListener('DOMContentLoaded', function() {
     toggleDataPersonalizada(document.querySelector('select[name="periodo"]').value);
 });
+
+    $(document).ready(function() {
+        var table = $('#reservasTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+            },
+            dom: 'Bfrtip', // Adiciona os botões
+            buttons: [
+                {
+                    extend: 'csv',
+                    text: '<i class="fas fa-file-csv btn btn-primary"></i>',
+                    filename: 'Solicitacoes',
+                    exportOptions: {
+                        columns: ':not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: '<i class="fas fa-file-excel btn btn-success"></i>',
+                    filename: 'Solicitacoes',
+                    exportOptions: {
+                        columns: ':not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    text: '<i class="fas fa-file-pdf btn btn-danger"></i>',
+                    filename: 'Solicitacoes',
+                    exportOptions: {
+                        columns: ':not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: '<i class="fas fa-print btn btn-secondary"></i>',
+                    exportOptions: {
+                        columns: ':not(:last-child)'
+                        
+                    }
+                }
+            ],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+            order: [[0, 'desc']],
+            paging: false,
+            lengthChange: false,
+            searching: false,
+            info: false
+        });
+
+        // Filtro por solicitante
+        $('#solicitanteFilter').on('change', function() {
+            table.column(0).search(this.value).draw();
+        });
+
+        // Filtro por data de necessidade
+        $('#inicioDataFilter').on('change', function() {
+            var formattedDate = this.value.split('-').reverse().join('/');
+            table.column(3).search(formattedDate).draw();
+        });
+        
+        // Filtro por data de necessidade
+        $('#fimDataFilter').on('change', function() {
+            var formattedDate = this.value.split('-').reverse().join('/');
+            table.column(5).search(formattedDate).draw();
+        });
+
+        
+
+        const style = document.createElement('style');
+        style.textContent = `
+            .dt-buttons .dt-button {
+                border: none !important;
+                border-radius: 0 !important;
+                display: inline-block !important;
+                background-image: none !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            
+            .dt-buttons {
+                margin-bottom: 15px;
+                display: flex;
+                gap: 10px;
+            }
+
+            .dt-buttons .btn {
+                padding: 8px 15px;
+                margin: 0 5px;
+            }
+        `;
+        document.head.appendChild(style);
+
+    });
+
 </script>
+
+
 {% endblock %}
+
+
+
+
+

@@ -26,11 +26,3 @@ class Sala(models.Model):
         
         return query.exists()
 
-    # def esta_ocupada(self, data, hora_inicio, hora_fim):
-    #     from reservas.models import Reserva
-    #     return Reserva.objects.filter(
-    #         sala=self,
-    #         data=data,
-    #         hora_fim__gt=hora_inicio,  # A reserva termina após o início solicitado
-    #         hora_inicio__lt=hora_fim  # A reserva começa antes do fim solicitado
-    #     ).exists()

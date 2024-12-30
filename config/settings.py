@@ -3,9 +3,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'as8as687A$#RSWEFWR%#@@@!$%¨&&¨*¨*(*6f!9&8+=3c0rjh4mz5hl14d=!04*+djw@'
+SECRET_KEY = 'as8as6887A$#RSWEFWR%#@@@!$%¨&&¨*¨*(*6f!9&8+=3c0rjh4mz5hl14d=!04*+djw@'
 
-DEBUG = True
+DEBUG = False
 
 INSTALLED_APPS = [
     'admin_interface',
@@ -37,7 +37,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-#    'config.middleware.SessionExpireRedirectMiddleware',
 
 ]
 
@@ -45,7 +44,7 @@ MIDDLEWARE = [
 ALLOWED_HOSTS = ["*"]
 STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 
 ROOT_URLCONF = 'config.urls'

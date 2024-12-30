@@ -4,11 +4,12 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime, timedelta, time
-from .models import Reserva
+from .models import Reserva, ConfiguracaoSistema
 from salas.models import Sala
 from django.db import models
 from zoneinfo import ZoneInfo
 from django.utils.timezone import make_aware
+from dateutil.relativedelta import relativedelta
 
 # Configura o timezone de São Paulo
 SAO_PAULO_TZ = ZoneInfo("America/Sao_Paulo")
@@ -65,6 +66,7 @@ def arredondar_horario(hora):
     return (hora + timedelta(hours=1)).replace(minute=0)
 
 # @login_required
+'''
 def criar_reserva(request, sala_id):
     sala = get_object_or_404(Sala, id=sala_id)
 
@@ -109,6 +111,85 @@ def criar_reserva(request, sala_id):
             messages.error(request, 'Este horário já está reservado.')
 
         return redirect('calendario_sala', sala_id=sala_id)
+'''
+
+
+def criar_reserva(request, sala_id):
+    sala = get_object_or_404(Sala, id=sala_id)
+    config = ConfiguracaoSistema.objects.first()
+    limite = config.limite_reservas_por_usuario if config else 5
+
+    if request.method == 'POST':
+
+        # # Verifica se o usuário está autenticado
+        # if not request.user.is_authenticated:
+        #     messages.error(request, "Você precisa estar autenticado para criar reservas.")
+        #     return redirect('login')
+
+        # usuario = request.user
+        
+        usuario = request.user if request.user.is_authenticated else None
+
+        # Para usuários autenticados, verifica o número de reservas no mês atual
+        if usuario:
+            inicio_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            fim_mes = (inicio_mes + relativedelta(months=1, days=-1))  # Último dia do mês
+
+            reservas_ativas_no_mes = Reserva.objects.filter(
+                usuario=usuario,
+                data__gte=inicio_mes,
+                data__lte=fim_mes
+            ).count()
+
+            if reservas_ativas_no_mes >= limite:
+                messages.error(request, f"Você atingiu o limite de {limite} reservas para este mês.")
+                return redirect('minhas_reservas')
+
+        # Captura os dados do formulário
+        data = request.POST.get('data')
+        hora_inicio = request.POST.get('hora_inicio')
+        hora_fim = request.POST.get('hora_fim')
+
+        # Ajusta o horário atual caso selecionado
+        if hora_inicio == 'now':
+            agora = make_aware(datetime.now(), timezone=SAO_PAULO_TZ)
+            hora_inicio = arredondar_horario(agora.time())
+            data = agora.date()
+        else:
+            data_obj = datetime.strptime(data, '%Y-%m-%d').date()
+            hora_inicio = datetime.strptime(hora_inicio, '%H:%M').time()
+            data = to_sao_paulo_tz(data_obj, hora_inicio).date()
+
+        # Ajusta o horário de fim, se fornecido
+        if hora_fim:
+            hora_fim = datetime.strptime(hora_fim, '%H:%M').time()
+        else:
+            hora_fim = (to_sao_paulo_tz(data, hora_inicio) + timedelta(minutes=30)).time()
+
+        # Verifica a disponibilidade do horário
+        if not sala.esta_ocupada(data, hora_inicio, hora_fim):
+            reserva = Reserva(
+                sala=sala,
+                data=data,
+                hora_inicio=hora_inicio,
+                hora_fim=hora_fim
+            )
+
+            if usuario:
+                reserva.usuario = usuario
+            else:
+                reserva.nome_nao_registrado = request.POST.get('nome_usuario')
+                reserva.empresa_nao_registrado = request.POST.get('empresa')
+
+            reserva.save()
+            messages.success(request, 'Reserva criada com sucesso!')
+        else:
+            messages.error(request, 'Este horário já está reservado.')
+
+        return redirect('calendario_sala', sala_id=sala_id)
+
+    return render(request, 'reservas/criar_reserva.html', {'sala': sala})
+
 
 
 @login_required
@@ -154,7 +235,7 @@ def excluir_reserva(request, reserva_id):
     if request.method == 'POST':
         reserva.delete()
         messages.success(request, 'Reserva excluída com sucesso!')
-        return redirect('minhas_reservas')
+        return redirect('relatorio_reservas')
     
     return render(request, 'reservas/confirmar_exclusao.html', {'reserva': reserva})
 
