@@ -6,7 +6,7 @@
     "id": "/",
     "display": "standalone",
     "background_color": "#000000",
-    "theme_color": "#0d6efd",
+    "theme_color": "#002855",
     "icons": [
       {
         "src": "/static/icons/logo_sdo_72x72.png",

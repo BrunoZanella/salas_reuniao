@@ -49,7 +49,7 @@ CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
 # Configurações de PWA
 PWA_APP_NAME = 'Agendamento de salas de reunião SDO'
 PWA_APP_DESCRIPTION = "Sistema para agendamento de salas de reunião"
-PWA_APP_THEME_COLOR = '#0d6efd'
+PWA_APP_THEME_COLOR = '#002855'
 PWA_APP_BACKGROUND_COLOR = '#000000'
 PWA_APP_DISPLAY = 'standalone'
 PWA_APP_SCOPE = '/'

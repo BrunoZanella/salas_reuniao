@@ -240,6 +240,10 @@
             }
         });
 
+
+
+
+        
         function isIos() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
         }
@@ -254,8 +258,8 @@
             iosInstallBanner.className = 'ios-install-banner';
             iosInstallBanner.innerHTML = `
                 <div style="position: fixed; bottom: 10px; left: 10px; right: 10px; background: #fff; padding: 10px; border: 1px solid #ccc; text-align: center; z-index: 1000; border-radius: 5px;">
-                    <p>Para instalar este app, toque em <span style="font-weight: bold;">"Compartilhar"</span> e depois em <span style="font-weight: bold;">"Adicionar à Tela de Início"</span>.</p>
                     <button id="close-banner" style="background: #dc3545; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">X</button>
+                    <p>Para instalar este app, toque em <span style="font-weight: bold;">"Compartilhar"</span> e depois em <span style="font-weight: bold;">"Adicionar à Tela de Início"</span>.</p>
                 </div>`;
             document.body.appendChild(iosInstallBanner);
         
