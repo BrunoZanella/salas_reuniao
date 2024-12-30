@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'as8as6887A$#RSWEFWR%#@@@!$%¨&&¨*¨*(*6f!9&8+=3c0rjh4mz5hl14d=!04*+djw@'
+SECRET_KEY = config('SECRET_KEY')
 
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 INSTALLED_APPS = [
     'admin_interface',
@@ -140,7 +141,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'zanellabruno7@gmail.com'
-EMAIL_HOST_PASSWORD = 'wron fcmr ugbj ufhb'
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'zanellabruno7@gmail.com'
 ADMINS = [('Admin Zanella', 'zanellabruno7@gmail.com')]
