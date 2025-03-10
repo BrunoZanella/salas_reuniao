@@ -1,82 +1,110 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="text-center mb-4">Gerenciar Salas</h1>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Gerenciar Salas</h1>
+        <div>
+            <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#configModal">
+                <i class="bi bi-gear"></i> Configurações
+            </button>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#adicionarSalaModal">
+                <i class="bi bi-plus-circle"></i> Nova Sala
+            </button>
+        </div>
+    </div>
 
-<div class="d-flex justify-content-end mb-3">
-    <!-- Botão de adicionar -->
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#adicionarSalaModal">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3H4.5a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-            <path d="M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 1a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/>
-        </svg>
-        Adicionar Sala
-    </button>
+    <!-- Lista de Salas -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Capacidade</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sala in salas %}
+                    <tr>
+                        <td class="align-middle">{{ sala.nome }}</td>
+                        <td class="align-middle">{{ sala.capacidade }} pessoas</td>
+                        <td class="text-end">
+                            <button 
+                                class="btn btn-outline-primary btn-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editarModal" 
+                                data-sala-id="{{ sala.id }}" 
+                                data-nome="{{ sala.nome }}" 
+                                data-tamanho="{{ sala.tamanho }}" 
+                                data-capacidade="{{ sala.capacidade }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button 
+                                class="btn btn-outline-danger btn-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#confirmarExclusaoModal" 
+                                data-sala-id="{{ sala.id }}" 
+                                data-nome="{{ sala.nome }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-<table class="table mt-4">
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Capacidade</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for sala in salas %}
-        <tr>
-            <td>{{ sala.nome }}</td>
-            <td>{{ sala.capacidade }}</td>
-            <td>
-                <!-- Botão de editar -->
-                <form method="POST" class="form-editar" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="acao" value="editar">
-                    <input type="hidden" name="sala_id" value="{{ sala.id }}">
-                    <!-- Botão de Editar -->
-                    <button 
-                        type="button" 
-                        class="btn btn-warning btn-sm" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#editarModal" 
-                        data-sala-id="{{ sala.id }}" 
-                        data-nome="{{ sala.nome }}" 
-                        data-tamanho="{{ sala.tamanho }}" 
-                        data-capacidade="{{ sala.capacidade }}">
-                        Editar
-                    </button>
-                </form>
-        
-                <!-- Botão de apagar -->
-                <form method="POST" class="form-deletar" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="acao" value="deletar">
-                    <input type="hidden" name="sala_id" value="{{ sala.id }}">
-                    <!-- Botão de apagar -->
-                    <button 
-                        type="button" 
-                        class="btn btn-danger btn-sm" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#confirmarExclusaoModal" 
-                        data-sala-id="{{ sala.id }}" 
-                        data-nome="{{ sala.nome }}">
-                        Apagar
-                    </button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-        
-    </tbody>
-</table>
-
-<!-- Modal Adicionar Sala -->
-<div class="modal fade" id="adicionarSalaModal" tabindex="-1" aria-labelledby="adicionarSalaModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Modal de Configurações -->
+<div class="modal fade" id="configModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="adicionarSalaModalLabel">Adicionar Sala</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Configurações do Sistema</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="atualizar_configuracao">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="limite_reservas" class="form-label">
+                            Limite de Reservas por Usuário (por dia)
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="limite_reservas" 
+                               name="limite_reservas_por_usuario" 
+                               value="{{ config.limite_reservas_por_usuario|default_if_none:'' }}"
+                               min="1"
+                               placeholder="Sem limite">
+                        <div class="form-text">
+                            Cada unidade representa um bloco de 30 minutos. 
+                            Deixe em branco para não ter limite.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Sala -->
+<div class="modal fade" id="adicionarSalaModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nova Sala</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -108,14 +136,13 @@
     </div>
 </div>
 
-
 <!-- Modal Editar Sala -->
-<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" id="editarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editarModalLabel">Editar Sala</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Editar Sala</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -148,17 +175,18 @@
     </div>
 </div>
 
-
 <!-- Modal Confirmar Exclusão -->
-<div class="modal fade" id="confirmarExclusaoModal" tabindex="-1" aria-labelledby="confirmarExclusaoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" id="confirmarExclusaoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="confirmarExclusaoModalLabel">Confirmar Exclusão</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                Tem certeza de que deseja excluir a sala <strong id="sala-a-excluir"></strong>?
+                <p class="mb-0">
+                    Tem certeza de que deseja excluir a sala <strong id="sala-a-excluir"></strong>?
+                </p>
             </div>
             <form id="form-deletar-sala" method="POST">
                 {% csrf_token %}
@@ -173,17 +201,15 @@
     </div>
 </div>
 
-
 {% if form.errors %}
 <div class="alert alert-danger">
-    <ul>
+    <ul class="mb-0">
         {% for field, errors in form.errors.items %}
         <li>{{ field }}: {{ errors|join:", " }}</li>
         {% endfor %}
     </ul>
 </div>
 {% endif %}
-
 
 <script>
     const editarModal = document.getElementById('editarModal');
@@ -194,27 +220,20 @@
         const tamanho = button.getAttribute('data-tamanho');
         const capacidade = button.getAttribute('data-capacidade');
 
-        // Preenche os campos do modal
         document.getElementById('editarSalaId').value = salaId;
         document.getElementById('editarNome').value = nome;
         document.getElementById('editarTamanho').value = tamanho;
         document.getElementById('editarCapacidade').value = capacidade;
     });
-</script>
 
-<script>
     const confirmarExclusaoModal = document.getElementById('confirmarExclusaoModal');
     confirmarExclusaoModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const salaId = button.getAttribute('data-sala-id');
         const nome = button.getAttribute('data-nome');
 
-        // Atualiza os campos do modal com os dados da sala
         document.getElementById('sala-a-excluir').textContent = nome;
         document.getElementById('excluir-sala-id').value = salaId;
     });
 </script>
-
-
-
 {% endblock %}

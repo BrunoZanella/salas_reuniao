@@ -8,7 +8,11 @@ def cadastro(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
         if form.is_valid():
-            form.save()
+            usuario = form.save(commit=False)
+            # Preenche os campos first_name e last_name do AbstractUser
+            usuario.first_name = usuario.nome
+            usuario.last_name = usuario.sobrenome
+            usuario.save()
             messages.success(request, 'Cadastro realizado com sucesso!')
             return redirect('login')
     else:

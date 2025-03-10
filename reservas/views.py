@@ -10,6 +10,7 @@ from django.db import models
 from zoneinfo import ZoneInfo
 from django.utils.timezone import make_aware
 from dateutil.relativedelta import relativedelta
+from django.core.exceptions import ValidationError
 
 # Configura o timezone de São Paulo
 SAO_PAULO_TZ = ZoneInfo("America/Sao_Paulo")
@@ -117,33 +118,42 @@ def criar_reserva(request, sala_id):
 def criar_reserva(request, sala_id):
     sala = get_object_or_404(Sala, id=sala_id)
     config = ConfiguracaoSistema.objects.first()
-    limite = config.limite_reservas_por_usuario if config else 5
+#    limite = config.limite_reservas_por_usuario if config else 5
+    limite = config.limite_reservas_por_usuario if config and config.limite_reservas_por_usuario else None
 
     if request.method == 'POST':
 
-        # # Verifica se o usuário está autenticado
-        # if not request.user.is_authenticated:
-        #     messages.error(request, "Você precisa estar autenticado para criar reservas.")
-        #     return redirect('login')
+        # Verifica se o usuário está autenticado
+        if not request.user.is_authenticated:
+            messages.error(request, "Você precisa estar autenticado para criar reservas.")
+            return redirect('login')
 
         # usuario = request.user
         
         usuario = request.user if request.user.is_authenticated else None
 
         # Para usuários autenticados, verifica o número de reservas no mês atual
-        if usuario:
-            inicio_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            fim_mes = (inicio_mes + relativedelta(months=1, days=-1))  # Último dia do mês
+        # if usuario:
+        #     inicio_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        #     fim_mes = (inicio_mes + relativedelta(months=1, days=-1))  # Último dia do mês
 
-            reservas_ativas_no_mes = Reserva.objects.filter(
-                usuario=usuario,
-                data__gte=inicio_mes,
-                data__lte=fim_mes
-            ).count()
+        #     reservas_ativas_no_mes = Reserva.objects.filter(
+        #         usuario=usuario,
+        #         data__gte=inicio_mes,
+        #         data__lte=fim_mes
+        #     ).count()
 
-            if reservas_ativas_no_mes >= limite:
-                messages.error(request, f"Você atingiu o limite de {limite} reservas para este mês.")
+        #     if reservas_ativas_no_mes >= limite:
+        #         messages.error(request, f"Você atingiu o limite de {limite} reservas para este mês.")
+        #         return redirect('minhas_reservas')
+
+        # Para usuários autenticados, verifica o número de reservas no dia
+        if usuario and limite:
+            reservas_no_dia = Reserva.objects.filter(usuario=usuario, data=timezone.now().date()).count()
+            if reservas_no_dia >= limite:
+                messages.error(request, f"Você atingiu o limite de {limite} reservas para hoje.")
                 return redirect('minhas_reservas')
+
 
         # Captura os dados do formulário
         data = request.POST.get('data')
@@ -181,8 +191,21 @@ def criar_reserva(request, sala_id):
                 reserva.nome_nao_registrado = request.POST.get('nome_usuario')
                 reserva.empresa_nao_registrado = request.POST.get('empresa')
 
-            reserva.save()
-            messages.success(request, 'Reserva criada com sucesso!')
+            # reserva.save()
+            # messages.success(request, 'Reserva criada com sucesso!')
+            
+            try:
+                reserva.clean()  # Aplica as validações antes de salvar
+                reserva.save()  # Agora a reserva sempre será salva
+
+                if hasattr(reserva, 'mensagem_ajuste'):
+                    messages.warning(request, reserva.mensagem_ajuste)
+                else:
+                    messages.success(request, '✅ Reserva criada com sucesso!')
+            except ValidationError as e:
+                messages.error(request," ".join(e.messages))  # Exibe a mensagem amigável
+
+
         else:
             messages.error(request, 'Este horário já está reservado.')
 

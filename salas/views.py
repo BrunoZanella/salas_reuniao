@@ -2,7 +2,7 @@ from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta, date, time
 from .models import Sala
-from reservas.models import Reserva
+from reservas.models import Reserva, ConfiguracaoSistema
 from django.contrib import messages
 from django.http import JsonResponse
 from .forms import SalaForm
@@ -140,24 +140,32 @@ def calendario_sala(request, sala_id):
 @user_passes_test(lambda u: u.is_superuser)
 def gerenciar_salas(request):
     salas = Sala.objects.all()
-    form = SalaForm()  # Inicializa o formulário padrão
+    form = SalaForm()
+    config = ConfiguracaoSistema.objects.first()
+    if not config:
+        config = ConfiguracaoSistema.objects.create()
 
     if request.method == 'POST':
         acao = request.POST.get('acao')
-        sala_id = request.POST.get('sala_id')
+        
+        if acao == 'atualizar_configuracao':
+            limite = request.POST.get('limite_reservas_por_usuario')
+            if limite:
+                config.limite_reservas_por_usuario = int(limite)
+                config.save()
+                messages.success(request, 'Configuração atualizada com sucesso!')
+            return redirect('gerenciar_salas')
 
-        print(f"Ação recebida: {acao}, Sala ID: {sala_id}")
-
-        if acao == 'editar' and sala_id:
+        elif acao == 'editar':
+            sala_id = request.POST.get('sala_id')
             sala = get_object_or_404(Sala, id=sala_id)
             form = SalaForm(request.POST, request.FILES, instance=sala)
             if form.is_valid():
                 form.save()
                 return redirect('gerenciar_salas')
-            else:
-                print("Erro ao validar o formulário de edição:", form.errors)
 
-        elif acao == 'deletar' and sala_id:
+        elif acao == 'deletar':
+            sala_id = request.POST.get('sala_id')
             sala = get_object_or_404(Sala, id=sala_id)
             sala.delete()
             return redirect('gerenciar_salas')
@@ -167,12 +175,9 @@ def gerenciar_salas(request):
             if form.is_valid():
                 form.save()
                 return redirect('gerenciar_salas')
-            else:
-                print("Erro ao validar o formulário de adição:", form.errors)
 
-
-    # Renderiza a página com o formulário inicial (GET ou caso não tenha ação válida no POST)
     return render(request, 'gerenciar_salas.html', {
         'salas': salas,
         'form': form,
+        'config': config,
     })

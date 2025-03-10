@@ -1,42 +1,178 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
+<style>
+    /* Estilos para melhorar a responsividade */
+    .reservas-container {
+        padding: 15px;
+    }
+    
+    /* Estilos para cards em dispositivos móveis */
+    .card-mobile {
+        margin-bottom: 15px;
+        border: 1px solid rgba(0,0,0,.125);
+        border-radius: 0.25rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .card-mobile .card-header {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        font-weight: bold;
+    }
+    
+    .card-mobile .card-body {
+        padding: 15px;
+    }
+    
+    .card-mobile .card-footer {
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-top: 1px solid rgba(0,0,0,.125);
+        display: flex;
+        justify-content: space-between;
+        gap: 5px;
+    }
+    
+    .mobile-label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 3px;
+    }
+    
+    .mobile-value {
+        margin-bottom: 10px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 767px) {
+        .table-desktop {
+            display: none;
+        }
+        
+        .cards-mobile {
+            display: block;
+        }
+        
+        .btn-mobile {
+            flex: 1;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-mobile i {
+            margin-right: 5px;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+    
+    @media (min-width: 768px) {
+        .cards-mobile {
+            display: none;
+        }
+        
+        .table-desktop {
+            display: block;
+        }
+    }
+    
+    /* Estilos para mensagem de nenhuma reserva */
+    .no-reservas {
+        padding: 30px 15px;
+        text-align: center;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .no-reservas i {
+        font-size: 3rem;
+        color: #6c757d;
+        margin-bottom: 15px;
+        display: block;
+    }
+</style>
+
+<div class="reservas-container">
     <h2 class="text-center mb-4">Minhas Reservas</h2>
     
     {% if reservas %}
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Sala</th>
-                        <th>Data</th>
-                        <th>Horário</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reserva in reservas %}
-                    <tr>
-                        <td>{{ reserva.sala.nome }}</td>
-                        <td>{{ reserva.data|date:"d/m/Y" }}</td>
-                        <td>{{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fim|time:"H:i" }}</td>
-                        <td>
-                            <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil"></i> Editar
-                            </a>
-                            <a href="{% url 'excluir_reserva' reserva.id %}" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i> Excluir
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Visualização em tabela para desktop -->
+        <div class="table-desktop">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Sala</th>
+                            <th>Data</th>
+                            <th>Horário</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reserva in reservas %}
+                        <tr>
+                            <td>{{ reserva.sala.nome }}</td>
+                            <td>{{ reserva.data|date:"d/m/Y" }}</td>
+                            <td>{{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fim|time:"H:i" }}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a href="{% url 'excluir_reserva' reserva.id %}" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i> Excluir
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Visualização em cards para dispositivos móveis -->
+        <div class="cards-mobile">
+            {% for reserva in reservas %}
+            <div class="card-mobile">
+                <div class="card-header">
+                    {{ reserva.sala.nome }}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <span class="mobile-label">Data:</span>
+                            <div class="mobile-value">{{ reserva.data|date:"d/m/Y" }}</div>
+                        </div>
+                        <div class="col-6">
+                            <span class="mobile-label">Horário:</span>
+                            <div class="mobile-value">{{ reserva.hora_inicio|time:"H:i" }} - {{ reserva.hora_fim|time:"H:i" }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'editar_reserva' reserva.id %}" class="btn btn-primary btn-mobile">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{% url 'excluir_reserva' reserva.id %}" class="btn btn-danger btn-mobile">
+                        <i class="bi bi-trash"></i> Excluir
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
         </div>
     {% else %}
-        <div class="alert alert-info text-center">
-            Você ainda não possui reservas.
+        <div class="no-reservas">
+            <i class="bi bi-calendar-x"></i>
+            <p class="lead mb-0">Você ainda não possui reservas.</p>
+
         </div>
     {% endif %}
 </div>

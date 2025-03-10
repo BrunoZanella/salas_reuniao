@@ -4,10 +4,94 @@
 {% block content %}
 
 <style>
+    /* Estilos base */
+    .calendar-container {
+        padding: 10px;
+        max-width: 100%;
+    }
+    
+    /* Estilos para visualização em lista (mobile) */
+    .mobile-view {
+        display: none;
+    }
+    
+    .mobile-day {
+        margin-bottom: 20px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+        display: none; /* Esconde todos os dias por padrão */
+    }
+    
+    .mobile-day.active {
+        display: block; /* Mostra apenas o dia ativo */
+    }
+    
+    .mobile-day-header {
+        background-color: #f8f9fa;
+        padding: 10px;
+        font-weight: bold;
+        text-align: center;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .mobile-slot {
+        padding: 10px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        align-items: center;
+    }
+    
+    .mobile-slot:last-child {
+        border-bottom: none;
+    }
+    
+    .mobile-time {
+        width: 80px;
+        font-weight: bold;
+    }
+    
+    .mobile-status {
+        flex: 1;
+        padding: 8px;
+        border-radius: 4px;
+        margin-left: 10px;
+        text-align: center;
+    }
+    
+    .mobile-status.available {
+        background-color: rgba(40, 167, 69, 0.1);
+        border: 1px solid rgba(40, 167, 69, 0.2);
+        color: #28a745;
+    }
+    
+    .mobile-status.reserved {
+        color: #000;
+        padding: 8px;
+        border-radius: 4px;
+    }
+    
+    /* Navegação de dias no mobile */
+    .day-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* Estilos para visualização em tabela (desktop) */
+    .desktop-view {
+        display: block;
+    }
+    
     .table-wrapper {
         position: relative;
-        overflow: auto; /* Permite scroll horizontal e vertical */
-        max-height: 80vh; /* Define um limite de altura para a tabela */
+        overflow: auto;
+        max-height: 80vh;
     }
 
     .table {
@@ -15,25 +99,22 @@
         border-collapse: collapse;
     }
 
-    /* Fixar a coluna "Horário" à esquerda */
     .sticky-column {
         position: sticky;
         left: 0;
-        background-color: #f8f9fa; /* Fundo para destacar */
-        z-index: 2; /* Garante que fique acima de outras células */
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Adiciona sombra à coluna fixa */
+        background-color: #f8f9fa;
+        z-index: 2;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     }
 
-    /* Fixar o cabeçalho ao topo */
     .sticky-header {
         position: sticky;
         top: 0;
-        background-color: #f8f9fa; /* Fundo para destacar */
-        z-index: 3; /* Garante que fique acima do conteúdo */
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Adiciona sombra ao cabeçalho */
+        background-color: #f8f9fa;
+        z-index: 3;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
-    /* Aparência geral das células */
     .table th,
     .table td {
         text-align: center;
@@ -46,15 +127,82 @@
         border: 1px solid #dee2e6;
     }
 
-    /* Hover nos horários disponíveis */
-    .horario-cell:hover {
-        background-color: rgba(0, 123, 255, 0.1); /* Destaque ao passar o mouse */
+    .horario-cell {
+        height: 60px;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .horario-cell:not([data-bs-toggle="tooltip"]):hover {
+        background-color: rgba(0, 123, 255, 0.1);
         cursor: pointer;
+    }
+
+    .reserva-info {
+        font-size: 0.8em;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    /* Controles de navegação */
+    .nav-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .room-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .week-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .view-toggle {
+        display: flex;
+        justify-content: center;
+        margin: 15px 0;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 767px) {
+        .desktop-view {
+            display: none;
+        }
+        
+        .mobile-view {
+            display: block;
+        }
+        
+        .week-nav button {
+            width: 100%;
+        }
+    }
+    
+    /* Linha de hora atual */
+    .hora-atual-linha {
+        position: absolute;
+        left: 0;
+        right: 0;
+        border-top: 2px solid #dc3545;
+        z-index: 1000;
+        pointer-events: none;
     }
 </style>
 
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="calendar-container">
+    <!-- Navegação entre salas -->
+    <div class="room-nav">
         <button class="btn btn-outline-primary {% if not sala_anterior %}disabled{% endif %}"
                 {% if sala_anterior %}onclick="window.location.href='{% url 'calendario_sala' sala_anterior.id %}?data={{ data_atual }}'"{% endif %}>
             <i class="bi bi-arrow-left"></i> 
@@ -68,90 +216,140 @@
         </button>
     </div>
     
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Navegação entre semanas -->
+    <div class="week-nav">
         <button class="btn btn-outline-primary" onclick="carregarSemanaAnterior()">
             <i class="bi bi-arrow-left"></i> Semana Anterior
         </button>
-        <h5 id="semana-atual" class="mb-0">
+        <h5 id="semana-atual" class="mb-0 d-none d-md-block">
             {{ dias_semana.0|date:"d/m/Y" }} - {{ dias_semana.4|date:"d/m/Y" }}
         </h5>
         <button class="btn btn-outline-primary" onclick="carregarProximaSemana()">
             Próxima Semana <i class="bi bi-arrow-right"></i>
         </button>
     </div>
+    
+    <!-- Botão para alternar entre visualizações -->
+    <div class="view-toggle d-md-none">
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleView()">
+            <span id="toggle-text">Alternar para Tabela</span>
+        </button>
+    </div>
 
-    <div class="table-responsive">
-        <div class="table-wrapper">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th class="sticky-column sticky-header">Horário</th>
-                        {% for dia in dias_semana %}
-                        <th class="sticky-header">{{ dia|date:"D, d M" }}</th>
-
-                        {% comment %} <th class="sticky-header">{{ dia|date:"d/m/Y" }}</th> {% endcomment %}
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for hora in horarios %}
-                    <tr>
-                        <td class="sticky-column">{{ hora|time:"H:i" }}</td>
-                        {% for dia in dias_semana %}
-
-                        <td 
-                        class="horario-cell position-relative {% if reservas|get_reserva:dia|get_reserva:hora %}reserved{% endif %}" 
-                        data-dia="{{ dia|date:'Y-m-d' }}" 
-                        data-hora="{{ hora|time:'H:i' }}"
-                        {% with reserva=reservas|get_reserva:dia|get_reserva:hora %}
-                        {% if reserva %}
-                            {% if reserva.usuario %}
-                                style="background-color: {{ reserva.usuario.id|get_user_color }};"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Reservado por {{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}"
-                            {% else %}
-                                style="background-color: rgba(200, 200, 200, 0.7);"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Reservado por {{ reserva.nome_nao_registrado }} ({{ reserva.empresa_nao_registrado }})"
-                            {% endif %}
-                        {% else %}
-                            style="cursor: pointer;"
-                            onclick="verificarDisponibilidade('{{ dia|date:'Y-m-d' }}', '{{ hora|time:'H:i' }}')"
-                        {% endif %}
-                        {% endwith %}
-                        
-                    >
-                        {% with reserva=reservas|get_reserva:dia|get_reserva:hora %}
-                        {% if reserva %}
-                            <div class="reserva-info" style="color: 
-                                {% if reserva.usuario %}{{ reserva.usuario.id|get_text_color }}{% else %}#000000{% endif %};">
-                                <small>
-                                    {{ hora|time:"H:i" }} - 
+    <!-- Visualização em tabela (desktop) -->
+    <div class="desktop-view">
+        <div class="table-responsive">
+            <div class="table-wrapper">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="sticky-column sticky-header">Horário</th>
+                            {% for dia in dias_semana %}
+                            <th class="sticky-header">{{ dia|date:"D, d M" }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for hora in horarios %}
+                        <tr>
+                            <td class="sticky-column">{{ hora|time:"H:i" }}</td>
+                            {% for dia in dias_semana %}
+                            <td 
+                                class="horario-cell position-relative {% if reservas|get_reserva:dia|get_reserva:hora %}reserved{% endif %}" 
+                                data-dia="{{ dia|date:'Y-m-d' }}" 
+                                data-hora="{{ hora|time:'H:i' }}"
+                                {% with reserva=reservas|get_reserva:dia|get_reserva:hora %}
+                                {% if reserva %}
                                     {% if reserva.usuario %}
-                                        {{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}
+                                        style="background-color: {{ reserva.usuario.id|get_user_color }};"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Reservado por {{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}"
                                     {% else %}
-                                        {{ reserva.nome_nao_registrado }}
+                                        style="background-color: rgba(200, 200, 200, 0.7);"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Reservado por {{ reserva.nome_nao_registrado }} ({{ reserva.empresa_nao_registrado }})"
                                     {% endif %}
-                                </small>
-                            </div>
-                        {% endif %}
-                        {% endwith %}
-                    </td>
-                    
+                                {% else %}
+                                    style="cursor: pointer;"
+                                    onclick="verificarDisponibilidade('{{ dia|date:'Y-m-d' }}', '{{ hora|time:'H:i' }}')"
+                                {% endif %}
+                                {% endwith %}
+                            >
+                                {% with reserva=reservas|get_reserva:dia|get_reserva:hora %}
+                                {% if reserva %}
+                                    <div class="reserva-info" style="color: 
+                                        {% if reserva.usuario %}{{ reserva.usuario.id|get_text_color }}{% else %}#000000{% endif %};">
+                                        <small>
+                                            {{ hora|time:"H:i" }} - 
+                                            {% if reserva.usuario %}
+                                                {{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}
+                                            {% else %}
+                                                {{ reserva.nome_nao_registrado }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                {% endif %}
+                                {% endwith %}
+                            </td>
+                            {% endfor %}
+                        </tr>
                         {% endfor %}
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-                
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+    
+    <!-- Visualização em lista (mobile) - um dia por vez -->
+    <div class="mobile-view">
+        <!-- Navegação entre dias -->
+        <div class="day-nav">
+            <button class="btn btn-sm btn-outline-primary" onclick="navegarDiaAnterior()">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <h5 id="dia-atual-mobile" class="mb-0">Hoje</h5>
+            <button class="btn btn-sm btn-outline-primary" onclick="navegarProximoDia()">
+                <i class="bi bi-arrow-right"></i>
+            </button>
+        </div>
+        
+        {% for dia in dias_semana %}
+        <div class="mobile-day" data-date="{{ dia|date:'Y-m-d' }}">
+            <div class="mobile-day-header">
+                {{ dia|date:"l, d/m/Y" }}
+            </div>
+            <div class="mobile-slots">
+                {% for hora in horarios %}
+                <div class="mobile-slot" 
+                     data-dia="{{ dia|date:'Y-m-d' }}" 
+                     data-hora="{{ hora|time:'H:i' }}">
+                    <div class="mobile-time">{{ hora|time:"H:i" }}</div>
+                    
+                    {% with reserva=reservas|get_reserva:dia|get_reserva:hora %}
+                    {% if reserva %}
+                        <div class="mobile-status reserved" 
+                             style="background-color: {% if reserva.usuario %}{{ reserva.usuario.id|get_user_color }}{% else %}rgba(200, 200, 200, 0.7){% endif %};">
+                            {% if reserva.usuario %}
+                                {{ reserva.usuario.first_name }} {{ reserva.usuario.last_name }}
+                            {% else %}
+                                {{ reserva.nome_nao_registrado }}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="mobile-status available" onclick="verificarDisponibilidade('{{ dia|date:'Y-m-d' }}', '{{ hora|time:'H:i' }}')">
+                            Disponível
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-
 
 <!-- Modal de Reserva -->
 <div class="modal fade" id="modalReserva" tabindex="-1">
@@ -230,49 +428,97 @@
     </div>
 </div>
 
-<style>
-    .hora-atual-linha {
-        position: absolute;
-        left: 0;
-        right: 0;
-        border-top: 2px solid #dc3545;
-        z-index: 1000;
-        pointer-events: none;
-    }
-    
-    .horario-cell {
-        height: 60px;
-        position: relative;
-        transition: all 0.3s ease;
-    }
-
-    .horario-cell:not([data-bs-toggle="tooltip"]):hover {
-        background-color: rgba(0, 123, 255, 0.1);
-    }
-
-    .reserva-info {
-        font-size: 0.8em;
-        text-align: center;
-        font-weight: bold;
-    }
-
-    .table td {
-        padding: 0;
-        position: relative;
-    }
-    
-</style>
-
 <script>
-
 const sala = {
     id: {{ sala.id }},
     nome: "{{ sala.nome|escapejs }}"
 };
 
 let dataAtual = '{{ dias_semana.0|date:"Y-m-d" }}';
+let viewMode = 'mobile'; // Começa com a visualização móvel em dispositivos pequenos
+let diaAtualIndex = 0; // Índice do dia atual na visualização móvel
 
+// Array com as datas da semana
+const diasSemana = [
+    {% for dia in dias_semana %}
+    '{{ dia|date:"Y-m-d" }}',
+    {% endfor %}
+];
 
+// Função para alternar entre visualizações
+function toggleView() {
+    const desktopView = document.querySelector('.desktop-view');
+    const mobileView = document.querySelector('.mobile-view');
+    const toggleText = document.getElementById('toggle-text');
+    
+    if (desktopView.style.display === 'none' || desktopView.style.display === '') {
+        desktopView.style.display = 'block';
+        mobileView.style.display = 'none';
+        toggleText.textContent = 'Alternar para Lista';
+        viewMode = 'desktop';
+    } else {
+        desktopView.style.display = 'none';
+        mobileView.style.display = 'block';
+        toggleText.textContent = 'Alternar para Tabela';
+        viewMode = 'mobile';
+    }
+    
+    // Salvar preferência do usuário
+    localStorage.setItem('calendarViewMode', viewMode);
+}
+
+// Função para navegar para o dia anterior
+function navegarDiaAnterior() {
+    if (diaAtualIndex > 0) {
+        diaAtualIndex--;
+        atualizarDiaVisivel();
+    }
+}
+
+// Função para navegar para o próximo dia
+function navegarProximoDia() {
+    if (diaAtualIndex < diasSemana.length - 1) {
+        diaAtualIndex++;
+        atualizarDiaVisivel();
+    }
+}
+
+// Função para atualizar qual dia está visível
+function atualizarDiaVisivel() {
+    // Esconde todos os dias
+    document.querySelectorAll('.mobile-day').forEach(day => {
+        day.classList.remove('active');
+    });
+    
+    // Mostra apenas o dia atual
+    const diaAtual = diasSemana[diaAtualIndex];
+    const diaElement = document.querySelector(`.mobile-day[data-date="${diaAtual}"]`);
+    if (diaElement) {
+        diaElement.classList.add('active');
+    }
+    
+    // Atualiza o texto do cabeçalho
+    const dataObj = new Date(diaAtual);
+    const hoje = new Date();
+    
+    // Formata a data para exibição
+    const options = { weekday: 'long', day: 'numeric', month: 'numeric' };
+    let textoData = new Intl.DateTimeFormat('pt-BR', options).format(dataObj);
+    
+    // Adiciona "Hoje" se for o dia atual
+    if (dataObj.toDateString() === hoje.toDateString()) {
+        textoData = "Hoje - " + textoData;
+    }
+    
+    document.getElementById('dia-atual-mobile').textContent = textoData;
+    
+    // Desabilita botões de navegação quando necessário
+    const btnAnterior = document.querySelector('.day-nav button:first-child');
+    const btnProximo = document.querySelector('.day-nav button:last-child');
+    
+    btnAnterior.disabled = diaAtualIndex === 0;
+    btnProximo.disabled = diaAtualIndex === diasSemana.length - 1;
+}
 
 function carregarProximaSemana() {
     const data = new Date(dataAtual);
@@ -348,29 +594,6 @@ function formatarData(data) {
     return `${dia}/${mes}/${ano}`;
 }
 
-// Validação de horários
-document.addEventListener('DOMContentLoaded', function() {
-    const horaInicio = document.getElementById('hora_inicio');
-    const horaFim = document.getElementById('hora_fim');
-
-    horaInicio.addEventListener('change', function() {
-        if (horaFim.value && horaFim.value <= horaInicio.value) {
-            const [hora, minuto] = horaInicio.value.split(':');
-            const dataHora = new Date();
-            dataHora.setHours(parseInt(hora));
-            dataHora.setMinutes(parseInt(minuto) + 30);
-            horaFim.value = String(dataHora.getHours()).padStart(2, '0') + ':' + 
-                           String(dataHora.getMinutes()).padStart(2, '0');
-        }
-    });
-
-    // Inicializa os tooltips do Bootstrap
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
-
 function atualizarLinhaHoraAtual() {
     // Remove linhas existentes
     document.querySelectorAll('.hora-atual-linha').forEach(linha => linha.remove());
@@ -394,42 +617,103 @@ function atualizarLinhaHoraAtual() {
         
         celula.appendChild(linha);
     });
+    
+    // Destaca o horário atual na visualização móvel
+    const slotsMobile = document.querySelectorAll(`.mobile-slot[data-hora="${horaFormatada}"]`);
+    slotsMobile.forEach(slot => {
+        slot.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+        slot.style.borderLeft = '3px solid #dc3545';
+    });
 }
+
+// Encontra o índice do dia atual ou o mais próximo
+function encontrarDiaAtual() {
+    const hoje = new Date().toISOString().split('T')[0];
+    
+    // Verifica se o dia atual está na lista
+    const indexHoje = diasSemana.indexOf(hoje);
+    if (indexHoje !== -1) {
+        return indexHoje;
+    }
+    
+    // Se não estiver, encontra o dia mais próximo
+    const hojeTimestamp = new Date(hoje).getTime();
+    let menorDiferenca = Infinity;
+    let indexMaisProximo = 0;
+    
+    diasSemana.forEach((dia, index) => {
+        const diaTimestamp = new Date(dia).getTime();
+        const diferenca = Math.abs(diaTimestamp - hojeTimestamp);
+        
+        if (diferenca < menorDiferenca) {
+            menorDiferenca = diferenca;
+            indexMaisProximo = index;
+        }
+    });
+    
+    return indexMaisProximo;
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação de horários
+    const horaInicio = document.getElementById('hora_inicio');
+    const horaFim = document.getElementById('hora_fim');
+
+    horaInicio.addEventListener('change', function() {
+        if (horaFim.value && horaFim.value <= horaInicio.value) {
+            const [hora, minuto] = horaInicio.value.split(':');
+            const dataHora = new Date();
+            dataHora.setHours(parseInt(hora));
+            dataHora.setMinutes(parseInt(minuto) + 30);
+            horaFim.value = String(dataHora.getHours()).padStart(2, '0') + ':' + 
+                           String(dataHora.getMinutes()).padStart(2, '0');
+        }
+    });
+
+    // Inicializa os tooltips do Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Configura a visualização inicial com base no tamanho da tela
+    const isMobile = window.innerWidth < 768;
+    const savedViewMode = localStorage.getItem('calendarViewMode');
+    
+    if (isMobile) {
+        document.querySelector('.desktop-view').style.display = 'none';
+        document.querySelector('.mobile-view').style.display = 'block';
+        document.getElementById('toggle-text').textContent = 'Alternar para Tabela';
+    } else {
+        document.querySelector('.desktop-view').style.display = 'block';
+        document.querySelector('.mobile-view').style.display = 'none';
+        document.getElementById('toggle-text').textContent = 'Alternar para Lista';
+    }
+    
+    // Se o usuário tiver uma preferência salva, use-a
+    if (savedViewMode) {
+        if (savedViewMode === 'desktop') {
+            document.querySelector('.desktop-view').style.display = 'block';
+            document.querySelector('.mobile-view').style.display = 'none';
+            document.getElementById('toggle-text').textContent = 'Alternar para Lista';
+        } else {
+            document.querySelector('.desktop-view').style.display = 'none';
+            document.querySelector('.mobile-view').style.display = 'block';
+            document.getElementById('toggle-text').textContent = 'Alternar para Tabela';
+        }
+    }
+    
+    // Encontra e mostra o dia atual ou o mais próximo
+    diaAtualIndex = encontrarDiaAtual();
+    atualizarDiaVisivel();
+    
+    // Atualiza a linha da hora atual
+    atualizarLinhaHoraAtual();
+});
 
 // Atualiza a cada minuto
 setInterval(atualizarLinhaHoraAtual, 60000);
-
-// Atualiza imediatamente ao carregar
-document.addEventListener('DOMContentLoaded', atualizarLinhaHoraAtual);
-
-{% comment %} document.addEventListener("DOMContentLoaded", () => {
-    const horaAtual = "{{ hora_atual|time:'H:i' }}"; // Hora atual enviada do Django
-    const linhasTabela = document.querySelectorAll("tr");
-
-    linhasTabela.forEach((linha) => {
-        const celulaHora = linha.querySelector(".sticky-column");
-
-        if (celulaHora && celulaHora.textContent.trim() === horaAtual) {
-            const alturaCelula = linha.querySelector(".horario-cell").offsetHeight;
-            const linhaDiv = document.createElement("div");
-
-            linhaDiv.className = "hora-atual-linha";
-            linhaDiv.style.position = "absolute";
-            linhaDiv.style.height = "2px";
-            linhaDiv.style.backgroundColor = "#dc3545";
-            linhaDiv.style.width = "100%";
-
-            // Adiciona a linha na célula correspondente
-            linha.querySelector(".horario-cell").appendChild(linhaDiv);
-        }
-    });
-}); {% endcomment %}
-
-
 </script>
-
-
-
-
 
 {% endblock %}
