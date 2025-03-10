@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 from django.utils.timezone import make_aware
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
+from .whatsapp import async_enviar_mensagens_whatsapp
 
 # Configura o timezone de São Paulo
 SAO_PAULO_TZ = ZoneInfo("America/Sao_Paulo")
@@ -202,6 +203,17 @@ def criar_reserva(request, sala_id):
                     messages.warning(request, reserva.mensagem_ajuste)
                 else:
                     messages.success(request, '✅ Reserva criada com sucesso!')
+                    
+                    # Envia mensagens WhatsApp de forma assíncrona
+                    if config and hasattr(config, 'contatos'):
+                        contatos = config.contatos.all()
+                        if contatos.exists():
+                            nome_usuario = usuario.get_full_name() if usuario else "Usuário não identificado"
+                            mensagem = f"📢 Nova reserva!\n\n👤 *{nome_usuario}*\n📅 *{data.strftime('%d/%m/%Y')}*\n🕒 {hora_inicio.strftime('%H:%M')} - {hora_fim.strftime('%H:%M')}\n🏢 Sala: {sala.nome}"
+                            
+                            # Inicia o envio assíncrono das mensagens
+                            async_enviar_mensagens_whatsapp(contatos, mensagem)
+                    
             except ValidationError as e:
                 messages.error(request," ".join(e.messages))  # Exibe a mensagem amigável
 

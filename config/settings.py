@@ -1,12 +1,13 @@
 import os
 from pathlib import Path
 from decouple import config
+import json
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = json.loads(config('DEBUG', default='false').lower())
 
 INSTALLED_APPS = [
     'admin_interface',
@@ -41,10 +42,8 @@ MIDDLEWARE = [
 
 ]
 
-#ALLOWED_HOSTS = ['192.168.15.96','10.0.6.169']
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["salas.reuniao.sdobusiness.com.br", "91.108.126.235","*"]
 STATICSTORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-CSRF_TRUSTED_ORIGINS= ["https://sdo.up.railway.app"]
 
 
 # Configurações de PWA
@@ -84,10 +83,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT', default='3306'),  # Se a porta não for definida, usa 3306
     }
 }
 
@@ -145,3 +156,12 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'zanellabruno7@gmail.com'
 ADMINS = [('Admin Zanella', 'zanellabruno7@gmail.com')]
+
+
+# Configurações da Evolution API
+EVOLUTION_API_URL = 'http://192.168.15.60:8080'
+EVOLUTION_API_KEY = 'k3v14ilstiguaumoz8nzt'
+EVOLUTION_API_INSTANCE = 'Suporte_BRG'
+APPEND_SLASH = False
+CSRF_TRUSTED_ORIGINS = ['http://192.168.15.96:8000/webhook']
+

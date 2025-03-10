@@ -2,7 +2,7 @@ from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta, date, time
 from .models import Sala
-from reservas.models import Reserva, ConfiguracaoSistema
+from reservas.models import Reserva, ConfiguracaoSistema, ContatoWhatsApp
 from django.contrib import messages
 from django.http import JsonResponse
 from .forms import SalaForm
@@ -154,6 +154,38 @@ def gerenciar_salas(request):
                 config.limite_reservas_por_usuario = int(limite)
                 config.save()
                 messages.success(request, 'Configuração atualizada com sucesso!')
+            return redirect('gerenciar_salas')
+
+        elif acao == 'adicionar_contato':
+            nome = request.POST.get('nome')
+            telefone = request.POST.get('telefone')
+            if nome and telefone:
+                ContatoWhatsApp.objects.create(
+                    configuracao=config,
+                    nome=nome,
+                    telefone=''.join(filter(str.isdigit, telefone))  # Remove caracteres não numéricos
+                )
+                messages.success(request, 'Contato adicionado com sucesso!')
+            return redirect('gerenciar_salas')
+
+        elif acao == 'editar_contato':
+            contato_id = request.POST.get('contato_id')
+            nome = request.POST.get('nome')
+            telefone = request.POST.get('telefone')
+            if contato_id and nome and telefone:
+                contato = get_object_or_404(ContatoWhatsApp, id=contato_id, configuracao=config)
+                contato.nome = nome
+                contato.telefone = ''.join(filter(str.isdigit, telefone))
+                contato.save()
+                messages.success(request, 'Contato atualizado com sucesso!')
+            return redirect('gerenciar_salas')
+
+        elif acao == 'excluir_contato':
+            contato_id = request.POST.get('contato_id')
+            if contato_id:
+                contato = get_object_or_404(ContatoWhatsApp, id=contato_id, configuracao=config)
+                contato.delete()
+                messages.success(request, 'Contato excluído com sucesso!')
             return redirect('gerenciar_salas')
 
         elif acao == 'editar':

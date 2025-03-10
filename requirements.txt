@@ -10,3 +10,5 @@ localflavor
 pytz
 python-dateutil
 python-decouple
+mysqlclient
+requests

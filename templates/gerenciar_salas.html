@@ -60,6 +60,198 @@
 
 <!-- Modal de Configurações -->
 <div class="modal fade" id="configModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configurações do Sistema</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tabs de navegação -->
+                <ul class="nav nav-tabs mb-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#limites" type="button" role="tab">
+                            <i class="bi bi-clock text-primary"></i> <span class="text-primary">Limites</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#whatsapp" type="button" role="tab">
+                            <i class="bi bi-whatsapp text-success"></i> <span class="text-success">WhatsApp</span>
+                        </button>
+                    </li>
+                </ul>
+                
+
+                <!-- Conteúdo das tabs -->
+                <div class="tab-content">
+                    <!-- Tab Limites -->
+                    <div class="tab-pane fade show active" id="limites" role="tabpanel">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="acao" value="atualizar_configuracao">
+                            <div class="mb-3">
+                                <label for="limite_reservas" class="form-label">
+                                    Limite de Reservas por Usuário (por dia)
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="limite_reservas" 
+                                       name="limite_reservas_por_usuario" 
+                                       value="{{ config.limite_reservas_por_usuario|default_if_none:'' }}"
+                                       min="1"
+                                       placeholder="Sem limite">
+                                <div class="form-text">
+                                    Cada unidade representa um bloco de 30 minutos. 
+                                    Deixe em branco para não ter limite.
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Salvar Limites
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab WhatsApp -->
+                    <div class="tab-pane fade" id="whatsapp" role="tabpanel">
+                        <!-- Lista de Contatos -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Contatos para Notificação</h6>
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#adicionarContatoModal">
+                                    <i class="bi bi-plus-circle"></i> Novo Contato
+                                </button>
+                            </div>
+                            <div class="list-group">
+                                {% for contato in config.contatos.all %}
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">{{ contato.nome }}</h6>
+                                        <small class="text-muted">{{ contato.telefone }}</small>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-1" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editarContatoModal"
+                                                data-contato-id="{{ contato.id }}"
+                                                data-nome="{{ contato.nome }}"
+                                                data-telefone="{{ contato.telefone }}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#excluirContatoModal"
+                                                data-contato-id="{{ contato.id }}"
+                                                data-nome="{{ contato.nome }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-whatsapp display-4"></i>
+                                    <p class="mt-2">Nenhum contato cadastrado</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Adicionar Contato -->
+<div class="modal fade" id="adicionarContatoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Novo Contato WhatsApp</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="adicionar_contato">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="novoContatoNome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="novoContatoNome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="novoContatoTelefone" class="form-label">Telefone WhatsApp</label>
+                        <input type="tel" class="form-control" id="novoContatoTelefone" name="telefone" 
+                               placeholder="(99) 99999-9999" required>
+                        <div class="form-text">Digite apenas números, incluindo DDD.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Contato -->
+<div class="modal fade" id="editarContatoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Contato</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="editar_contato">
+                <input type="hidden" name="contato_id" id="editarContatoId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editarContatoNome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="editarContatoNome" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarContatoTelefone" class="form-label">Telefone WhatsApp</label>
+                        <input type="tel" class="form-control" id="editarContatoTelefone" name="telefone" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Excluir Contato -->
+<div class="modal fade" id="excluirContatoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Excluir Contato</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="excluir_contato">
+                <input type="hidden" name="contato_id" id="excluirContatoId">
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir o contato <strong id="excluirContatoNome"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Configurações -->
+<div class="modal fade" id="configModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -201,16 +393,6 @@
     </div>
 </div>
 
-{% if form.errors %}
-<div class="alert alert-danger">
-    <ul class="mb-0">
-        {% for field, errors in form.errors.items %}
-        <li>{{ field }}: {{ errors|join:", " }}</li>
-        {% endfor %}
-    </ul>
-</div>
-{% endif %}
-
 <script>
     const editarModal = document.getElementById('editarModal');
     editarModal.addEventListener('show.bs.modal', function (event) {
@@ -234,6 +416,50 @@
 
         document.getElementById('sala-a-excluir').textContent = nome;
         document.getElementById('excluir-sala-id').value = salaId;
+    });
+    // Novo script para os modais de contato
+    document.addEventListener('DOMContentLoaded', function() {
+        // Máscara para telefone
+        function maskPhone(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            if (value.length > 2) value = `(${value.slice(0,2)}) ${value.slice(2)}`;
+            if (value.length > 9) value = `${value.slice(0,9)}-${value.slice(9)}`;
+            input.value = value;
+        }
+
+        // Aplica máscara nos campos de telefone
+        document.querySelectorAll('input[type="tel"]').forEach(input => {
+            input.addEventListener('input', e => maskPhone(e.target));
+        });
+
+        // Setup do modal de edição de contato
+        const editarContatoModal = document.getElementById('editarContatoModal');
+        if (editarContatoModal) {
+            editarContatoModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-contato-id');
+                const nome = button.getAttribute('data-nome');
+                const telefone = button.getAttribute('data-telefone');
+
+                this.querySelector('#editarContatoId').value = id;
+                this.querySelector('#editarContatoNome').value = nome;
+                this.querySelector('#editarContatoTelefone').value = telefone;
+            });
+        }
+
+        // Setup do modal de exclusão de contato
+        const excluirContatoModal = document.getElementById('excluirContatoModal');
+        if (excluirContatoModal) {
+            excluirContatoModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-contato-id');
+                const nome = button.getAttribute('data-nome');
+
+                this.querySelector('#excluirContatoId').value = id;
+                this.querySelector('#excluirContatoNome').textContent = nome;
+            });
+        }
     });
 </script>
 {% endblock %}

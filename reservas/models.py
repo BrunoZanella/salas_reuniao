@@ -16,6 +16,14 @@ class ConfiguracaoSistema(models.Model):
     def __str__(self):
         return f"Limite de Reservas: {self.limite_reservas_por_usuario}"
 
+class ContatoWhatsApp(models.Model):
+    configuracao = models.ForeignKey(ConfiguracaoSistema, on_delete=models.CASCADE, related_name="contatos")
+    nome = models.CharField(max_length=100)
+    telefone = models.CharField(max_length=20, help_text="Número de WhatsApp para notificações.")
+
+    def __str__(self):
+        return f"{self.nome} - {self.telefone}"
+    
 class Reserva(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     nome_nao_registrado = models.CharField(max_length=100, null=True, blank=True)
